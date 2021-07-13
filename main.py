@@ -14,6 +14,7 @@ class viewerGUI(tk.Frame):
         super().__init__(master)
 
         self.create_canvas()
+        self.create_popupmenu()
 
         self.mainloop()
 
@@ -29,6 +30,29 @@ class viewerGUI(tk.Frame):
         self.im = ImageTk.PhotoImage(image=self.grab_image)
         self.canvas.create_image(0, 0, image=self.im, anchor='nw')
         self.canvas.pack()
+    # ----------------------ポップアップメニューの設定----------------------
+    def show_popupmenu(self, event):
+        self.popUpMenu.post(event.x_root, event.y_root)
+
+    def create_popupmenu(self):
+        # ポップアップメニューの設定
+        self.popUpMenu = tk.Menu(
+            root,
+            tearoff = False, # tearoff=False:指定しないとメニューがきりとられちゃう
+        )
+        # [ポップアップメニュー] - [Command-1]
+        self.popUpMenu.add_command(
+            label = "Command1",
+            command=self.command_1
+        )
+        # 右クリックイベント関連付け
+        root.bind("<Button-3>", self.show_popupmenu)
+
+    # Command1処理
+    def command_1(self):
+        print("Command_1")
+
+
 
 if __name__ == '__main__':
     root = tk.Tk()
