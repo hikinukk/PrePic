@@ -6,8 +6,10 @@ from PIL import ImageGrab
 from PIL import Image, ImageTk
 import ctypes
 import ctypes.wintypes
+import time
 
 import tkinter as tk
+import threading
 
 WIDTH = 800
 HEIGHT = 500
@@ -17,8 +19,6 @@ class viewerGUI(tk.Frame):
 
         self.create_canvas()
         self.create_popupmenu()
-
-        self.mainloop()
 
     # ----------------------画像表示canvas設定----------------------
     def create_canvas(self):
@@ -36,6 +36,21 @@ class viewerGUI(tk.Frame):
         self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
         self.canvas.create_image(0, 0, image=self.im, anchor='nw')
         self.canvas.pack()
+
+    def update_canvas(self):
+        while(True):
+            # 画像読み込み
+            # self.grab_image = ImageGrab.grab()
+            # 配列に変換
+            # self.cv_img = np.array(self.grab_image, dtype=np.uint8)
+            self.cv_img = np.asarray(ImageGrab.grab())
+            # 色変換
+            self.cv_img2 = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
+            # canvasに画像を表示
+            self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img2))
+            self.canvas.create_image(0, 0, image=self.im, anchor='nw')
+            # time.sleep(1)
+
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
         self.popUpMenu.post(event.x_root, event.y_root)
@@ -63,4 +78,6 @@ class viewerGUI(tk.Frame):
 if __name__ == '__main__':
     root = tk.Tk()
     gui = viewerGUI(master=root)
+    thread1 = threading.Thread(target=gui.update_canvas)
+    thread1.start()
     gui.mainloop()
