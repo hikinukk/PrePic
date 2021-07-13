@@ -10,11 +10,13 @@ import time
 
 import tkinter as tk
 import threading
-
+import mss
 import sys
 
 WIDTH = 800
 HEIGHT = 500
+window_size = (0, 0, WIDTH, HEIGHT)
+
 class viewerGUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -29,30 +31,23 @@ class viewerGUI(tk.Frame):
         fm_upper = tk.Frame(self.master)
         fm_upper.pack(fill=tk.X, side=tk.TOP)
         self.canvas = tk.Canvas(fm_upper, width=WIDTH, height=HEIGHT)
-        # 画像読み込み
-        self.grab_image = ImageGrab.grab()
-        # 配列に変換
-        self.cv_img = np.array(self.grab_image, dtype=np.uint8)
-        # 色変換
-        self.cv_img = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
-        # canvasに画像を表示
-        self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
-        self.canvas.create_image(0, 0, image=self.im, anchor='nw')
         self.canvas.pack()
 
+    # 画像を更新する処理
     def update_canvas(self):
         while(True):
             # 画像読み込み
-            # self.grab_image = ImageGrab.grab()
+            # self.grab_image = mss.mss().grab(window_size)
+            self.grab_image = ImageGrab.grab(window_size)
             # 配列に変換
-            # self.cv_img = np.array(self.grab_image, dtype=np.uint8)
-            self.cv_img = np.asarray(ImageGrab.grab())
+            self.cv_img = np.array(self.grab_image, dtype=np.uint8)
             # 色変換
-            self.cv_img2 = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
+            # self.cv_img2 = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
             # canvasに画像を表示
-            self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img2))
+            self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
             self.canvas.create_image(0, 0, image=self.im, anchor='nw')
             # time.sleep(1)
+            
     # ----------------------キー入力設定----------------------
     def key_handler(self, event):
         print(event.keycode)
