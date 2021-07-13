@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from PIL import ImageGrab
+from PIL import Image, ImageTk
 import ctypes
 import ctypes.wintypes
 
@@ -21,6 +23,11 @@ class viewerGUI(tk.Frame):
         fm_upper = tk.Frame(self.master)
         fm_upper.pack(fill=tk.X, side=tk.TOP)
         self.canvas = tk.Canvas(fm_upper, width=WIDTH, height=HEIGHT)
+        # 画像読み込み
+        self.grab_image = ImageGrab.grab()
+        # canvasに画像を表示
+        self.im = ImageTk.PhotoImage(image=self.grab_image)
+        self.canvas.create_image(0, 0, image=self.im, anchor='nw')
         self.canvas.pack()
 
 if __name__ == '__main__':
