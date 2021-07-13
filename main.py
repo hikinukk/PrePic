@@ -11,6 +11,8 @@ import time
 import tkinter as tk
 import threading
 
+import sys
+
 WIDTH = 800
 HEIGHT = 500
 class viewerGUI(tk.Frame):
@@ -19,6 +21,7 @@ class viewerGUI(tk.Frame):
 
         self.create_canvas()
         self.create_popupmenu()
+        self.create_key_handler()
 
     # ----------------------画像表示canvas設定----------------------
     def create_canvas(self):
@@ -50,6 +53,12 @@ class viewerGUI(tk.Frame):
             self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img2))
             self.canvas.create_image(0, 0, image=self.im, anchor='nw')
             # time.sleep(1)
+    # ----------------------キー入力設定----------------------
+    def key_handler(self, event):
+        print(event.keycode)
+
+    def create_key_handler(self):
+        root.bind("<KeyPress>", self.key_handler)
 
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
@@ -63,7 +72,7 @@ class viewerGUI(tk.Frame):
         )
         # [ポップアップメニュー] - [Command-1]
         self.popUpMenu.add_command(
-            label = "Command1",
+            label = "終了",
             command=self.command_1
         )
         # 右クリックイベント関連付け
@@ -71,7 +80,8 @@ class viewerGUI(tk.Frame):
 
     # Command1処理
     def command_1(self):
-        print("Command_1")
+        print("終了")
+        sys.exit()
 
 
 
@@ -79,5 +89,6 @@ if __name__ == '__main__':
     root = tk.Tk()
     gui = viewerGUI(master=root)
     thread1 = threading.Thread(target=gui.update_canvas)
+    thread1.setDaemon(True) # デーモン化（デーモンスレッド以外が終了したら終了する）
     thread1.start()
     gui.mainloop()
