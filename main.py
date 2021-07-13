@@ -24,6 +24,9 @@ class viewerGUI(tk.Frame):
         self.create_canvas()
         self.create_popupmenu()
         self.create_key_handler()
+        
+        self.update()
+        self.mainloop()
 
     # ----------------------画像表示canvas設定----------------------
     def create_canvas(self):
@@ -35,19 +38,21 @@ class viewerGUI(tk.Frame):
 
     # 画像を更新する処理
     def update_canvas(self):
-        while(True):
-            # 画像読み込み
-            # self.grab_image = mss.mss().grab(window_size)
-            self.grab_image = ImageGrab.grab(window_size)
-            # 配列に変換
-            self.cv_img = np.array(self.grab_image, dtype=np.uint8)
-            # 色変換
-            # self.cv_img2 = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
-            # canvasに画像を表示
-            self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
-            self.canvas.create_image(0, 0, image=self.im, anchor='nw')
-            # time.sleep(1)
-            
+        # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
+        # self.grab_image = mss.mss().grab(window_size)
+        self.grab_image = ImageGrab.grab(window_size)
+        # 配列に変換
+        self.cv_img = np.array(self.grab_image)
+        # 色変換
+        # self.cv_img2 = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
+        # canvasに画像を表示
+        self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
+        self.canvas.create_image(0, 0, image=self.im, anchor='nw')
+
+    def update(self):
+        self.update_canvas()
+        self.after(15,self.update)
+
     # ----------------------キー入力設定----------------------
     def key_handler(self, event):
         print(event.keycode)
@@ -83,7 +88,3 @@ class viewerGUI(tk.Frame):
 if __name__ == '__main__':
     root = tk.Tk()
     gui = viewerGUI(master=root)
-    thread1 = threading.Thread(target=gui.update_canvas)
-    thread1.setDaemon(True) # デーモン化（デーモンスレッド以外が終了したら終了する）
-    thread1.start()
-    gui.mainloop()
