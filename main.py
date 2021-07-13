@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import cv2
+import numpy as np
 from PIL import ImageGrab
 from PIL import Image, ImageTk
 import ctypes
@@ -26,8 +28,12 @@ class viewerGUI(tk.Frame):
         self.canvas = tk.Canvas(fm_upper, width=WIDTH, height=HEIGHT)
         # 画像読み込み
         self.grab_image = ImageGrab.grab()
+        # 配列に変換
+        self.cv_img = np.array(self.grab_image, dtype=np.uint8)
+        # 色変換
+        self.cv_img = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
         # canvasに画像を表示
-        self.im = ImageTk.PhotoImage(image=self.grab_image)
+        self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
         self.canvas.create_image(0, 0, image=self.im, anchor='nw')
         self.canvas.pack()
     # ----------------------ポップアップメニューの設定----------------------
