@@ -15,7 +15,6 @@ import sys
 
 WIDTH = 800
 HEIGHT = 500
-window_size = (0, 0, WIDTH, HEIGHT)
 
 class viewerGUI(tk.Frame):
     def __init__(self, master=None):
@@ -38,13 +37,15 @@ class viewerGUI(tk.Frame):
 
     # 画像を更新する処理
     def update_canvas(self):
+        self.window_size = viewerGUI.GetWindowRectFromName("無題 - メモ帳")
+
         # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
-        # self.grab_image = mss.mss().grab(window_size)
-        self.grab_image = ImageGrab.grab(window_size)
+        self.grab_image = mss.mss().grab(self.window_size)
+        # self.grab_image = ImageGrab.grab(self.window_size)
         # 配列に変換
         self.cv_img = np.array(self.grab_image)
         # 色変換
-        # self.cv_img2 = cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
+        self.cv_img= cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
         # canvasに画像を表示
         self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
         self.canvas.create_image(0, 0, image=self.im, anchor='nw')
@@ -82,6 +83,14 @@ class viewerGUI(tk.Frame):
     def command_1(self):
         print("終了")
         sys.exit()
+
+    # ----------------------ウィンドウハンドラ----------------------
+    # ウィンドウの名前からウィンドウの位置を取得
+    def GetWindowRectFromName(TargetWindowTitle:str)-> tuple:
+        TargetWindowHandle = ctypes.windll.user32.FindWindowW(0, TargetWindowTitle)
+        Rectangle = ctypes.wintypes.RECT()
+        ctypes.windll.user32.GetWindowRect(TargetWindowHandle, ctypes.pointer(Rectangle))
+        return (Rectangle.left, Rectangle.top, Rectangle.right, Rectangle.bottom)
 
 
 
