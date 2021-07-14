@@ -13,7 +13,7 @@ import threading
 import mss
 import sys
 
-WIDTH = 800
+WIDTH = 500
 HEIGHT = 500
 
 class viewerGUI(tk.Frame):
@@ -29,11 +29,11 @@ class viewerGUI(tk.Frame):
 
     # ----------------------画像表示canvas設定----------------------
     def create_canvas(self):
-        # canvas作成
         fm_upper = tk.Frame(self.master)
-        fm_upper.pack(fill=tk.X, side=tk.TOP)
+        fm_upper.pack(fill=tk.BOTH, expand=1)
+        # canvas作成
         self.canvas = tk.Canvas(fm_upper, width=WIDTH, height=HEIGHT)
-        self.canvas.pack()
+        self.canvas.pack(fill=tk.BOTH, expand=1)
 
     # 画像を更新する処理
     def update_canvas(self):
