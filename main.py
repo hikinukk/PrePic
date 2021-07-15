@@ -44,18 +44,18 @@ class viewerGUI(tk.Frame):
     # 画像を更新する処理
     def update_canvas(self):
 
-        # focusしているウィンドウの名前がなかったらcanvasをクリア
+        # focusしているウィンドウがなかったらcanvasをクリア
         if self.focus_window_name == "": return
-        if not self.focus_window_name in self.get_window_title():
-            self.focus_window_name = ""
-            self.canvas.delete("all")
-            return
 
         self.window_size = viewerGUI.GetWindowRectFromName(self.focus_window_name)
-
         # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
         self.grab_image = mss.mss().grab(self.window_size)
         # self.grab_image = ImageGrab.grab(self.window_size)
+
+        if self.grab_image.width == 0 and self.grab_image.height == 0 :
+            self.canvas.delete("all")
+            return
+
         # 配列に変換
         self.cv_img = np.array(self.grab_image)
         # 色変換
