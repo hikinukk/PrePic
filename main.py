@@ -20,32 +20,37 @@ class viewerGUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
 
+        self.is_focus_window = False
         self.color_filter = "default"
         self.is_image_flip_horizontal = False
         self.is_image_flip_upside_down =False
         self.focus_window_name = ""
         self.window_name_list = self.window_title_delete_null(self.get_window_title())
+        self.scale = 1
 
         self.create_canvas()
         self.create_popupmenu()
         self.create_key_handler()
+        self.create_mouse_handler()
         
         self.update()
         self.mainloop()
 
     # ----------------------画像表示canvas設定----------------------
     def create_canvas(self):
-        fm_upper = tk.Frame(self.master)
-        fm_upper.pack(fill=tk.BOTH, expand=1)
+        self.fm_upper = tk.Frame(self.master)
+        self.fm_upper.pack(fill=tk.BOTH, expand=1)
         # canvas作成
-        self.canvas = tk.Canvas(fm_upper, width=WIDTH, height=HEIGHT)
+        self.canvas = tk.Canvas(self.fm_upper, width=WIDTH, height=HEIGHT)
         self.canvas.pack(fill=tk.BOTH, expand=1)
 
     # 画像を更新する処理
     def update_canvas(self):
 
         # focusしているウィンドウがなかったらcanvasをクリア
-        if self.focus_window_name == "": return
+        if self.focus_window_name == "":
+            self.is_focus_window = False
+            return
 
         self.window_size = viewerGUI.GetWindowRectFromName(self.focus_window_name)
         # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
@@ -53,11 +58,16 @@ class viewerGUI(tk.Frame):
         # self.grab_image = ImageGrab.grab(self.window_size)
 
         if self.grab_image.width == 0 and self.grab_image.height == 0 :
+            self.is_focus_window = False
             self.canvas.delete("all")
             return
 
+        self.is_focus_window = True
+
         # 配列に変換
         self.cv_img = np.array(self.grab_image)
+        # 倍率反映
+        self.cv_img = cv2.resize(self.cv_img, dsize=None, fx=self.scale, fy=self.scale)
         # 色変換
         if self.color_filter == "default":
             self.cv_img= cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
@@ -86,6 +96,39 @@ class viewerGUI(tk.Frame):
 
     def create_key_handler(self):
         root.bind("<KeyPress>", self.key_handler)
+
+    # ----------------------マウス入力設定----------------------
+    def create_mouse_handler(self):
+        # root.bind("<Motion>", self.mouse_move)
+    
+        self.canvas.bind("<Button-1>", self.click)
+        self.canvas.bind("<B1-Motion>", self.drag)
+        self.canvas.bind("<MouseWheel>", self.wheel)
+        self.canvas.pack()
+
+    # マウスダウン
+    def click(self, event):
+        if not self.is_focus_window: return
+        self.canvas.scan_mark(event.x, event.y)
+
+    # マウスムーブ
+    def drag(self, event):
+        if not self.is_focus_window: return
+        self.canvas.scan_dragto(event.x, event.y, gain=1)
+
+    # マウスホイール
+    def wheel(self, event):
+        if not self.is_focus_window: return
+        if event.delta > 0: # 向きの検出
+            self.scale_at(1.25, event.x, event.y) # 拡大
+        else:
+            self.scale_at(0.8, event.x, event.y) # 縮小
+
+    # ----------------------画像表示変換の設定----------------------
+    # 拡大縮小
+    def scale_at(self, scale:float, cx:float, cy:float):
+        self.scale *= scale
+        # 座標(cx, cy)を中心に拡大縮小
 
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
