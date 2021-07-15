@@ -43,7 +43,14 @@ class viewerGUI(tk.Frame):
 
     # 画像を更新する処理
     def update_canvas(self):
+
+        # focusしているウィンドウの名前がなかったらcanvasをクリア
         if self.focus_window_name == "": return
+        if not self.focus_window_name in self.get_window_title():
+            self.focus_window_name = ""
+            self.canvas.delete("all")
+            return
+
         self.window_size = viewerGUI.GetWindowRectFromName(self.focus_window_name)
 
         # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
