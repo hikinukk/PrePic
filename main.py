@@ -23,6 +23,8 @@ class viewerGUI(tk.Frame):
         self.color_filter = "default"
         self.is_image_flip_horizontal = False
         self.is_image_flip_upside_down =False
+        self.focus_window_name = ""
+        self.window_name_list = self.window_title_delete_null(self.get_window_title())
 
         self.create_canvas()
         self.create_popupmenu()
@@ -41,7 +43,8 @@ class viewerGUI(tk.Frame):
 
     # 画像を更新する処理
     def update_canvas(self):
-        self.window_size = viewerGUI.GetWindowRectFromName("無題 - メモ帳")
+        if self.focus_window_name == "": return
+        self.window_size = viewerGUI.GetWindowRectFromName(self.focus_window_name)
 
         # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
         self.grab_image = mss.mss().grab(self.window_size)
@@ -79,6 +82,7 @@ class viewerGUI(tk.Frame):
 
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
+        self.update_command_window_name()
         self.popUpMenu.post(event.x_root, event.y_root)
 
     def create_popupmenu(self):
@@ -86,6 +90,7 @@ class viewerGUI(tk.Frame):
         self.popUpMenu = tk.Menu(root, tearoff = False)
         self.popUpMenu_filter = tk.Menu(self.popUpMenu, tearoff = False)
         self.popUpMenu_flip = tk.Menu(self.popUpMenu, tearoff = False)
+        self.popUpMenu_window = tk.Menu(self.popUpMenu, tearoff = False)
 
         # [ポップアップメニュー] - [Command]
         self.popUpMenu.add_cascade(label='フィルタ',menu=self.popUpMenu_filter,under=5)
@@ -97,6 +102,10 @@ class viewerGUI(tk.Frame):
         self.popUpMenu_flip.add_command(label='デフォルト',underline=5,command=self.command_flip_default)
         self.popUpMenu_flip.add_command(label='左右反転',underline=5,command=self.command_flip_horizontal)
         self.popUpMenu_flip.add_command(label='上下反転',underline=5,command=self.command_flip_upside_down)
+
+        self.popUpMenu.add_cascade(label='ウィンドウ切り替え', menu=self.popUpMenu_window)
+        for window_name in self.window_name_list:
+            self.popUpMenu_window.add_command(label=window_name, command= lambda window_name = window_name: self.command_window_change(window_name))
 
         self.popUpMenu.add_command(label = "終了", command=self.command_finish)
 
@@ -126,17 +135,52 @@ class viewerGUI(tk.Frame):
         else:
             self.is_image_flip_upside_down = False
 
+    def command_window_change(self, name):
+        self.focus_window_name = name
+
     def command_finish(self):
         print("終了")
         sys.exit()
 
     # ----------------------ウィンドウハンドラ----------------------
+    # ウィンドウ一覧の名前を取得
+    def get_window_title(self):
+        # コールバック関数を定義(定義のみで実行ではない) コールバック関数はctypes.WINFUNCTYPEで作成可能
+        EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
+        # 開いているウィンドウ一覧を取得
+        EnumWindows = ctypes.windll.user32.EnumWindows
+        # タイトル格納用変数
+        title = []
+
+        def foreach_window(hwnd, lparam):
+            if ctypes.windll.user32.IsWindowVisible(hwnd): # ウィンドウが表示されているかどうか
+                length = ctypes.windll.user32.GetWindowTextLengthW(hwnd) # タイトルバー取得
+                buff = ctypes.create_unicode_buffer(length +1)
+                ctypes.windll.user32.GetWindowTextW(hwnd, buff, length + 1)
+                title.append(buff.value)
+
+                return True
+
+        EnumWindows(EnumWindowsProc(foreach_window), 0)
+        
+        return title
+
+    # get_window_titleで取得したウィンドウ一覧には空の名前が含まれているため取り除く
+    def window_title_delete_null(self, window_name_list):
+        return [name for name in window_name_list if name != '']
+
     # ウィンドウの名前からウィンドウの位置を取得
     def GetWindowRectFromName(TargetWindowTitle:str)-> tuple:
         TargetWindowHandle = ctypes.windll.user32.FindWindowW(0, TargetWindowTitle)
         Rectangle = ctypes.wintypes.RECT()
         ctypes.windll.user32.GetWindowRect(TargetWindowHandle, ctypes.pointer(Rectangle))
         return (Rectangle.left, Rectangle.top, Rectangle.right, Rectangle.bottom)
+
+    # ウィンドウ一覧を更新
+    def update_command_window_name(self):
+        self.window_name_list = self.window_title_delete_null(self.get_window_title())
+        for i, window_name in enumerate(self.window_name_list):
+            self.popUpMenu_window.entryconfigure(i, label=window_name, command= lambda window_name = window_name: self.command_window_change(window_name))
 
 
 
