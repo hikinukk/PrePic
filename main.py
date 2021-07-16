@@ -47,19 +47,21 @@ class viewerGUI(tk.Frame):
     # 画像を更新する処理
     def update_canvas(self):
 
-        # focusしているウィンドウがなかったらcanvasをクリア
         if self.focus_window_name == "":
             self.is_focus_window = False
             return
-
-        self.window_size = viewerGUI.GetWindowRectFromName(self.focus_window_name)
+        # ハンドルからキャプチャウィンドウのサイズを取得
+        self.window_size = self.GetWindowRectFromHandle(self.window_handle)
         # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
         self.grab_image = mss.mss().grab(self.window_size)
         # self.grab_image = ImageGrab.grab(self.window_size)
 
+        # 画像が読み込めなかった場合（ウィンドウが閉じたなど）
         if self.grab_image.width == 0 and self.grab_image.height == 0 :
             self.is_focus_window = False
             self.canvas.delete("all")
+            # 閉じられる前と同じ名前のウィンドウが開いたら自動的にハンドル取得
+            self.window_handle = viewerGUI.GetWindowHandleFromName(self.focus_window_name)
             return
 
         self.is_focus_window = True
@@ -120,8 +122,10 @@ class viewerGUI(tk.Frame):
     def wheel(self, event):
         if not self.is_focus_window: return
         if event.delta > 0: # 向きの検出
+            if self.scale > 3: return
             self.scale_at(1.25, event.x, event.y) # 拡大
         else:
+            if self.scale < 0.5: return
             self.scale_at(0.8, event.x, event.y) # 縮小
 
     # ----------------------画像表示変換の設定----------------------
@@ -187,6 +191,7 @@ class viewerGUI(tk.Frame):
 
     def command_window_change(self, name):
         self.focus_window_name = name
+        self.window_handle = viewerGUI.GetWindowHandleFromName(self.focus_window_name)
 
     def command_finish(self):
         print("終了")
@@ -220,11 +225,17 @@ class viewerGUI(tk.Frame):
         return [name for name in window_name_list if name != '']
 
     # ウィンドウの名前からウィンドウの位置を取得
-    def GetWindowRectFromName(TargetWindowTitle:str)-> tuple:
-        TargetWindowHandle = ctypes.windll.user32.FindWindowW(0, TargetWindowTitle)
+    def GetWindowHandleFromName(TargetWindowTitle:str)-> tuple:
+        TargetWindowHandle = ctypes.windll.user32.FindWindowW(0, TargetWindowTitle) # ウィンドウハンドル取得
+        return TargetWindowHandle
+        
+
+    # ウィンドウハンドルから位置を取得
+    def GetWindowRectFromHandle(self, TargetWindowHandle):
         Rectangle = ctypes.wintypes.RECT()
         ctypes.windll.user32.GetWindowRect(TargetWindowHandle, ctypes.pointer(Rectangle))
         return (Rectangle.left, Rectangle.top, Rectangle.right, Rectangle.bottom)
+
 
     # ウィンドウ一覧を更新
     def update_command_window_name(self):
