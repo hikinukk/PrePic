@@ -26,7 +26,7 @@ class viewerGUI(tk.Frame):
         self.is_image_flip_upside_down =False
         self.focus_window_name = ""
         self.window_name_list = self.window_title_delete_null(self.get_window_title())
-        self.scale = 1
+        self.scale = 2
 
         self.create_canvas()
         self.create_popupmenu()
@@ -68,8 +68,19 @@ class viewerGUI(tk.Frame):
 
         # 配列に変換
         self.cv_img = np.array(self.grab_image)
+
+        # canvasの大きさ取得
+        self.canvas_top = self.canvas.winfo_x()
+        self.canvas_bottom = self.canvas.winfo_x() + self.canvas.winfo_width()
+        self.canvas_left = self.canvas.winfo_y()
+        self.canvas_right = self.canvas.winfo_y() + self.canvas.winfo_height()
+
         # 倍率反映
         self.cv_img = cv2.resize(self.cv_img, dsize=None, fx=self.scale, fy=self.scale)
+
+        # canvasからはみ出た部分は削除
+        self.cv_img =self.cv_img[self.canvas_left:self.canvas_right,self.canvas_top:self.canvas_bottom ]
+
         # 色変換
         if self.color_filter == "default":
             self.cv_img= cv2.cvtColor(self.cv_img, cv2.COLOR_RGB2BGR)
