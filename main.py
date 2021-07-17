@@ -9,6 +9,7 @@ import ctypes.wintypes
 import time
 
 import tkinter as tk
+import tkinter.ttk as ttk
 import threading
 import mss
 import sys
@@ -26,7 +27,7 @@ class viewerGUI(tk.Frame):
         self.is_image_flip_upside_down =False
         self.focus_window_name = ""
         self.window_name_list = self.window_title_delete_null(self.get_window_title())
-        self.scale = 2
+        self.scale = 1
 
         self.create_canvas()
         self.create_popupmenu()
@@ -38,15 +39,23 @@ class viewerGUI(tk.Frame):
 
     # ----------------------画像表示canvas設定----------------------
     def create_canvas(self):
-        self.fm_upper = tk.Frame(self.master)
-        self.fm_upper.pack(fill=tk.BOTH, expand=1)
+        self.app = tk.Frame(self.master)
+        self.app.pack(fill=tk.BOTH, expand=True)
+        
+        # スクロールバー作成
+        self.create_scrollbar()
+
         # canvas作成
-        self.canvas = tk.Canvas(self.fm_upper, width=WIDTH, height=HEIGHT)
-        self.canvas.pack(fill=tk.BOTH, expand=1)
+        self.canvas = tk.Canvas(self.app, bd=0, highlightthickness=0,
+            yscrollcommand=self.vscrollbar.set, xscrollcommand=self.hscrollbar.set)
+        self.canvas.pack(side=tk.LEFT,fill=tk.BOTH, expand=True)
+
+        # スクロールバーをCanvasに関連付け
+        self.vscrollbar.config(command=self.canvas.yview)
+        self.hscrollbar.config(command=self.canvas.xview)
 
     # 画像を更新する処理
     def update_canvas(self):
-
         if self.focus_window_name == "":
             self.is_focus_window = False
             return
@@ -69,6 +78,12 @@ class viewerGUI(tk.Frame):
         # 配列に変換
         self.cv_img = np.array(self.grab_image)
 
+        # appの大きさ取得
+        self.app_top = self.app.winfo_x()
+        self.app_bottom = self.app.winfo_x() + self.app.winfo_width()
+        self.app_left = self.app.winfo_y()
+        self.app_right = self.app.winfo_y() + self.app.winfo_height()
+
         # canvasの大きさ取得
         self.canvas_top = self.canvas.winfo_x()
         self.canvas_bottom = self.canvas.winfo_x() + self.canvas.winfo_width()
@@ -78,8 +93,13 @@ class viewerGUI(tk.Frame):
         # 倍率反映
         self.cv_img = cv2.resize(self.cv_img, dsize=None, fx=self.scale, fy=self.scale)
 
+        # print(self.app.winfo_width())
         # canvasからはみ出た部分は削除
         self.cv_img =self.cv_img[self.canvas_left:self.canvas_right,self.canvas_top:self.canvas_bottom ]
+        # 拡大率に合わせてスクロール範囲とスクロールバーの長さの変更
+        self.scrollregion_x = self.canvas_right * 2 * self.scale
+        self.scrollregion_y = self.canvas_bottom * 2 * self.scale
+        self.canvas.configure(scrollregion=(-self.scrollregion_y,-self.scrollregion_x,self.scrollregion_y,self.scrollregion_x)) #スクロール範囲
 
         # 色変換
         if self.color_filter == "default":
@@ -143,7 +163,16 @@ class viewerGUI(tk.Frame):
     # 拡大縮小
     def scale_at(self, scale:float, cx:float, cy:float):
         self.scale *= scale
-        # 座標(cx, cy)を中心に拡大縮小
+
+    # ----------------------スクロールバー作成----------------------
+    def create_scrollbar(self):
+        # 縦スクロールバー
+        self.vscrollbar = ttk.Scrollbar(self.app, orient=tk.VERTICAL)
+        self.vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=False)
+
+        # 横スクロールバー
+        self.hscrollbar = ttk.Scrollbar(self.app, orient=tk.HORIZONTAL)
+        self.hscrollbar.pack(fill=tk.X, side=tk.BOTTOM, expand=False)
 
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
