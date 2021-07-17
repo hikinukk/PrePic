@@ -78,11 +78,17 @@ class viewerGUI(tk.Frame):
         # 配列に変換
         self.cv_img = np.array(self.grab_image)
 
+        # TODO: 拡大すると画像がはみ出て途中で切れるので、なんとかする
         # appの大きさ取得
-        self.app_top = self.app.winfo_x()
-        self.app_bottom = self.app.winfo_x() + self.app.winfo_width()
-        self.app_left = self.app.winfo_y()
-        self.app_right = self.app.winfo_y() + self.app.winfo_height()
+        # self.app_top = self.app.winfo_x()
+        # self.app_bottom = self.app.winfo_x() + self.app.winfo_width()
+        # self.app_left = self.app.winfo_y()
+        # self.app_right = self.app.winfo_y() + self.app.winfo_height()
+
+        self.app_top = self.app.winfo_rootx()
+        self.app_bottom = self.app.winfo_rootx() + self.app.winfo_width()
+        self.app_left = self.app.winfo_rooty()
+        self.app_right = self.app.winfo_rooty() + self.app.winfo_height()
 
         # canvasの大きさ取得
         self.canvas_top = self.canvas.winfo_x()
@@ -90,12 +96,29 @@ class viewerGUI(tk.Frame):
         self.canvas_left = self.canvas.winfo_y()
         self.canvas_right = self.canvas.winfo_y() + self.canvas.winfo_height()
 
+        # self.canvas_top = self.canvas.winfo_rootx()
+        # self.canvas_bottom = self.canvas.winfo_rootx() + self.canvas.winfo_width()
+        # self.canvas_left = self.canvas.winfo_rooty()
+        # self.canvas_right = self.canvas.winfo_rooty() + self.canvas.winfo_height()
+       
+        # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
+        # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
         # 倍率反映
         self.cv_img = cv2.resize(self.cv_img, dsize=None, fx=self.scale, fy=self.scale)
+
 
         # print(self.app.winfo_width())
         # canvasからはみ出た部分は削除
         self.cv_img =self.cv_img[self.canvas_left:self.canvas_right,self.canvas_top:self.canvas_bottom ]
+        # if self.app_left < 
+        # self.cv_img = self.cv_img[ self.app_left : self.app_right ,self.app_top : self.app_bottom ]
+
+        # self.canvas.configure(width = self.cv_img.shape[1])
+        # self.canvas.configure(height = self.cv_img.shape[0])
+        
+        # self.cv_img = self.cv_img[ self.app_left : self.app_right ,self.app_top : self.app_bottom ]
+
+
         # 拡大率に合わせてスクロール範囲とスクロールバーの長さの変更
         self.scrollregion_x = self.canvas_right * 2 * self.scale
         self.scrollregion_y = self.canvas_bottom * 2 * self.scale
@@ -163,6 +186,10 @@ class viewerGUI(tk.Frame):
     # 拡大縮小
     def scale_at(self, scale:float, cx:float, cy:float):
         self.scale *= scale
+        self.canvas.configure(width = self.canvas_bottom * scale)
+        self.canvas.configure(height = self.canvas_right * scale)
+
+        # 座標(cx, cy)を中心に拡大縮小
 
     # ----------------------スクロールバー作成----------------------
     def create_scrollbar(self):
