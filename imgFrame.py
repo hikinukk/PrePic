@@ -41,7 +41,6 @@ class frameGUI(tk.Frame):
     # ----------------------frame設定----------------------
     def create_frame(self):
         self.app_frame = tk.Frame(self.root)
-        self.app_frame.pack(fill=tk.BOTH, expand=True, anchor='nw')
         self.app_frame.bind("<Enter>", self.enter_mouse)
         self.app_frame.bind("<Leave>", self.leave_mouse)
 

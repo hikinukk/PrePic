@@ -24,26 +24,23 @@ class viewerGUI(tk.Frame):
         super().__init__(master)
 
 
+        # PanedWindowの作成
+        self.paned_window = tk.PanedWindow(self.master, sashwidth = 4)
 
-        self.frame = imgFrame.frameGUI(root)
-        self.frame2 = imgFrame.frameGUI(root)
-        self.frame3 = imgFrame.frameGUI(root)
+        # Frameの作成
+        self.widget1 = imgFrame.frameGUI(root)
+        self.widget2 = imgFrame.frameGUI(root)
 
-        self.frame.pack(fill=tk.BOTH, expand=True)
-        self.frame2.pack(fill=tk.BOTH, expand=True)
-        self.frame3.pack(fill=tk.BOTH, expand=True)
+        # フレームをPanedWindowに追加
+        self.paned_window.add(self.widget1.app_frame)
+        self.paned_window.add(self.widget2.app_frame)
 
-        self.frame.update()
-        self.frame2.update()
-        self.frame3.update()
+        self.paned_window.pack(expand = True, fill = tk.BOTH)
+
+        self.widget1.update()
+        self.widget2.update()
+
         self.mainloop()
-        
-    def addPage(self, page, name):
-        assert not name in self._pages
-        self._pages[name] = page
-        self._current = name
-        page.grid(row=0, column=0, sticky=tk.NSEW)
-
 
 if __name__ == '__main__':
     root = tk.Tk()
