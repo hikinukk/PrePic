@@ -30,10 +30,11 @@ class frameGUI(tk.Frame):
         self.window_name_list = self.window_title_delete_null(self.get_window_title()) # 右クリック選択用　開いてるウィンドウ一覧
         self.scale = 1                              # 初期拡大率
         self.isOnMouse = False                      # frameにマウスオーバーしているか
-
+        
         root.protocol('WM_DELETE_WINDOW', self.doSomething)
         self.create_frame()
         self.create_canvas()
+        self.move_img()
         self.create_popupmenu()
         self.create_key_handler()
         self.create_mouse_handler()
@@ -43,6 +44,8 @@ class frameGUI(tk.Frame):
         self.app_frame = tk.Frame(self.root)
         self.app_frame.bind("<Enter>", self.enter_mouse)
         self.app_frame.bind("<Leave>", self.leave_mouse)
+        # Frameの大きさに合わせてcanvasの中身を調整
+        self.app_frame.bind('<Configure>', self.configure_frame_move_img)
 
     def enter_mouse(self, event):
         self.canvas.configure(background='#CCFFFF')
@@ -59,7 +62,8 @@ class frameGUI(tk.Frame):
 
         # canvas作成
         self.canvas = tk.Canvas(self.app_frame, bd=0, highlightthickness=0,
-            yscrollcommand=self.vscrollbar.set, xscrollcommand=self.hscrollbar.set)
+            yscrollcommand=self.vscrollbar.set, xscrollcommand=self.hscrollbar.set,
+            width="500", height="500", relief="ridge",borderwidth="2")
         self.canvas.pack(side=tk.LEFT,fill=tk.BOTH, expand=True)
 
         # スクロールバーをCanvasに関連付け
@@ -68,7 +72,7 @@ class frameGUI(tk.Frame):
 
     def update(self):
         self.update_canvas()
-        self.after(240,self.update)
+        self.after(60,self.update)
 
     # 画像を更新する処理
     def update_canvas(self):
@@ -156,7 +160,26 @@ class frameGUI(tk.Frame):
 
         # canvasに画像を表示
         self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
-        self.canvas.create_image(0, 0, image=self.im, anchor='nw')
+        # 開きたては真ん中に表示　それ以外はウィンドウの大きさによって位置を変化
+        self.canvas.create_image(self.image_move_wonfo_x, self.image_move_wonfo_y, image=self.im)
+
+    # canvasの中身の位置を変更
+    def configure_frame_move_img(self, event):
+        self.move_img()
+
+    def move_img(self):
+        self.canvas_w = self.canvas.winfo_width()
+        self.canvas_h = self.canvas.winfo_height()
+        self.image_move_wonfo_x = self.canvas_w / 2
+        self.image_move_wonfo_y = self.canvas_h / 2
+
+    # canvas初期化
+    def clean_canvas(self):
+        self.move_img()
+        self.color_filter = "default"
+        self.is_image_flip_horizontal = False
+        self.is_image_flip_upside_down = False
+        self.scale = 1
 
     # ----------------------キー入力設定----------------------
     def key_handler(self, event):
@@ -268,7 +291,9 @@ class frameGUI(tk.Frame):
         else:
             self.is_image_flip_upside_down = False
 
+    # focusしているウィンドウを変更
     def command_window_change(self, name):
+        self.clean_canvas()
         self.focus_window_name = name
         self.window_handle = frameGUI.GetWindowHandleFromName(self.focus_window_name)
         print(self.focus_window_name, 'を選択')
@@ -286,7 +311,8 @@ class frameGUI(tk.Frame):
     # ----------------------ウィンドウハンドラ----------------------
     # ウィンドウ一覧の名前を取得
     def get_window_title(self):
-        print("aaa")
+        # このprintがないと何故か動かない
+        print("")
         # コールバック関数を定義(定義のみで実行ではない) コールバック関数はctypes.WINFUNCTYPEで作成可能
         EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
         # 開いているウィンドウ一覧を取得
