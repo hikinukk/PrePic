@@ -15,6 +15,7 @@ import mss
 import sys
 
 import imgFrame
+import PanedWindow
 
 WIDTH = 500
 HEIGHT = 500
@@ -23,22 +24,8 @@ class viewerGUI(tk.Frame):
     def __init__(self, root, master=None):
         super().__init__(master)
 
-
         # PanedWindowの作成
-        self.paned_window = tk.PanedWindow(self.master, sashwidth = 4)
-
-        # Frameの作成
-        self.widget1 = imgFrame.frameGUI(root)
-        self.widget2 = imgFrame.frameGUI(root)
-
-        # フレームをPanedWindowに追加
-        self.paned_window.add(self.widget1.app_frame)
-        self.paned_window.add(self.widget2.app_frame)
-
-        self.paned_window.pack(expand = True, fill = tk.BOTH)
-
-        self.widget1.update()
-        self.widget2.update()
+        self.paned_window = PanedWindow.panedWindow(root)
 
         self.mainloop()
 
