@@ -19,9 +19,12 @@ WIDTH = 500
 HEIGHT = 500
 
 class frameGUI(tk.Frame):
-    def __init__(self, root ,master=None ):
+    def __init__(self, root, frame_width, frame_height, master=None ):
         super().__init__(master)
         self.root = root
+        self.frame_width = frame_width #frame生成時の横の大きさ（親パネルの2分の1）
+        self.frame_height = frame_height #frame生成時の縦の大きさ（親パネルの2分の1）
+
         self.is_focus_window = False                # focusしているウィンドウがあるか
         self.color_filter = "default"               # 色変化
         self.is_image_flip_horizontal = False       # 左右反転有効有無
@@ -47,6 +50,10 @@ class frameGUI(tk.Frame):
         # Frameの大きさに合わせてcanvasの中身を調整
         self.app_frame.bind('<Configure>', self.configure_frame_move_img)
 
+    def resize_frame(self):
+        self.app_frame.configure(height = self.app_frame.winfo_height()/2)
+        self.app_frame.configure(width = self.app_frame.winfo_width()/2)
+
     def enter_mouse(self, event):
         self.canvas.configure(background='#CCFFFF')
         self.isOnMouse = True
@@ -63,7 +70,7 @@ class frameGUI(tk.Frame):
         # canvas作成
         self.canvas = tk.Canvas(self.app_frame, bd=0, highlightthickness=0,
             yscrollcommand=self.vscrollbar.set, xscrollcommand=self.hscrollbar.set,
-            width="500", height="500", relief="ridge",borderwidth="2")
+            width=self.frame_width, height=self.frame_height, relief="ridge",borderwidth="2")
         self.canvas.pack(side=tk.LEFT,fill=tk.BOTH, expand=True)
 
         # スクロールバーをCanvasに関連付け
