@@ -24,43 +24,54 @@ class panedWindow(tk.Frame):
     def __init__(self, root ,master=None ):
         super().__init__(master)
 
-        # self.paned_window_list = []
+        # self.panedWindow_list = []
+
+        # 親PanedWindowの作成
+        parentWindow = ttk.PanedWindow(root, orient = 'horizontal') 
+        parentWindow.pack(expand = True, fill = tk.BOTH)
 
         # PanedWindowの作成
-        paned_window = tk.PanedWindow(root, sashwidth = 4)
-        paned_window.pack(expand = True, fill = tk.BOTH)
+        panedWindow = ttk.PanedWindow(root, orient = 'horizontal')
+        # panedWindow.pack(expand = True, fill = tk.BOTH)
+        parentWindow.add(panedWindow)
 
         # Frameの作成
-        widget1 = imgFrame.frameGUI(root, WIDTH, HEIGHT)
-        widget1.popUpMenu.add_command(label='ウィンドウ分割',underline=5,command=lambda:self.create_paned_frame(paned_window, widget1, root))
-        widget1.update()
+        frameWidget = imgFrame.frameGUI(root, WIDTH, HEIGHT)
+        frameWidget.popUpMenu.add_command(label='ウィンドウを縦に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "|", root))
+        frameWidget.popUpMenu.add_command(label='ウィンドウを横に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "-", root))
+        frameWidget.update()
 
         # フレームをPanedWindowに追加
-        paned_window.add(widget1.app_frame)
+        panedWindow.add(frameWidget.app_frame)
 
-        # self.paned_window_list.append(self.paned_window)
+        # self.panedWindow_list.append(self.panedWindow)
 
-    def create_paned_frame(self, parentWindow, widget1, root):
+    def create_paned_frame(self, parentPanedWindow, parentFrameWidget, direction, root):
         # PanedWindowの作成
-        paned_window2 = tk.PanedWindow(parentWindow, sashwidth = 4)
-        paned_window2.pack(expand = True, fill = tk.BOTH)
+        if direction == "|":
+            panedWindow = ttk.PanedWindow(parentPanedWindow, orient = 'horizontal') # 垂直方向のpanedWindowを作成
+            parentFrameWidget.resize_frame_y() # 親Frameの横サイズを半分にする
+        elif direction == "-":
+            panedWindow = ttk.PanedWindow(parentPanedWindow, orient = 'vertical') # 平行方向のpanedWindowを作成
+            parentFrameWidget.resize_frame_x() # 親Frameの縦サイズを半分にする
+
+        print(parentFrameWidget.app_frame,"::",type(parentFrameWidget.app_frame))
+
+        # 親PanedWindowに新しいPanedWindowを追加
+        parentPanedWindow.add(panedWindow)
         
-        # 親Frameのサイズを半分にする
-        widget1.resize_frame_y()
         # 新しいFrameを作成
-        widget2 = imgFrame.frameGUI(root, widget1.winfo_width(), widget1.winfo_height())
+        frameWidget = imgFrame.frameGUI(root, parentFrameWidget.winfo_width(), parentFrameWidget.winfo_height())
 
         # 新しいFrameの機能を追加
-        widget2.popUpMenu.add_command(label='ウィンドウ分割',underline=5,command=lambda:self.create_paned_frame(paned_window2, widget2, root))
-        widget2.update()
-        
-        # FrameをPanedWindowに追加
-        paned_window2.add(widget1.app_frame) # 親Frame
-        paned_window2.add(widget2.app_frame) # 新しいFrame
-        
-        # 親PanedWindowに新しいPanedWindowを追加
-        parentWindow.add(paned_window2)
+        frameWidget.popUpMenu.add_command(label='ウィンドウを縦に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "|", root))
+        frameWidget.popUpMenu.add_command(label='ウィンドウを横に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "-", root))
+        frameWidget.update()
 
-        # self.paned_window_list.append(paned_window2)
+
+        # FrameをPanedWindowに追加
+        panedWindow.add(parentFrameWidget.app_frame) # 親Frame
+        panedWindow.add(frameWidget.app_frame) # 新しいFrame
+        
 
 

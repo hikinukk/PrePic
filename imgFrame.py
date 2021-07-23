@@ -14,10 +14,6 @@ import threading
 import mss
 import sys
 
-
-WIDTH = 500
-HEIGHT = 500
-
 class frameGUI(tk.Frame):
     def __init__(self, root, frame_width, frame_height, master=None ):
         super().__init__(master)
@@ -49,10 +45,13 @@ class frameGUI(tk.Frame):
         self.app_frame.bind("<Leave>", self.leave_mouse)
         # Frameの大きさに合わせてcanvasの中身を調整
         self.app_frame.bind('<Configure>', self.configure_frame_move_img)
+        self.app_frame.pack(expand=False)
 
-    def resize_frame(self):
-        self.app_frame.configure(height = self.app_frame.winfo_height()/2)
+    def resize_frame_y(self):
         self.app_frame.configure(width = self.app_frame.winfo_width()/2)
+
+    def resize_frame_x(self,):
+        self.app_frame.configure(height = self.app_frame.winfo_height()/2)
 
     def enter_mouse(self, event):
         self.canvas.configure(background='#CCFFFF')
@@ -72,6 +71,7 @@ class frameGUI(tk.Frame):
             yscrollcommand=self.vscrollbar.set, xscrollcommand=self.hscrollbar.set,
             width=self.frame_width, height=self.frame_height, relief="ridge",borderwidth="2")
         self.canvas.pack(side=tk.LEFT,fill=tk.BOTH, expand=True)
+        # self.canvas.pack(fill=tk.BOTH, expand=True)
 
         # スクロールバーをCanvasに関連付け
         self.vscrollbar.config(command=self.canvas.yview)
