@@ -39,6 +39,7 @@ class panedWindow(tk.Frame):
         frameWidget = imgFrame.frameGUI(root, WIDTH, HEIGHT)
         frameWidget.popUpMenu.add_command(label='ウィンドウを縦に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "|", root))
         frameWidget.popUpMenu.add_command(label='ウィンドウを横に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "-", root))
+        frameWidget.popUpMenu.add_command(label='ウィンドウを削除',underline=5,command=lambda:self.forget_paned_frame(self.parentWindow, frameWidget, root))
         frameWidget.update()
 
         # フレームをPanedWindowに追加
@@ -74,6 +75,7 @@ class panedWindow(tk.Frame):
         # 親FrameのparentPanedWindowとparentFrameWidgetを更新
         parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを縦に分割', command=lambda:self.create_paned_frame(panedWindow, parentFrameWidget, "|", root))
         parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを横に分割', command=lambda:self.create_paned_frame(panedWindow, parentFrameWidget, "-", root))
+        parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを削除',command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, parentFrameWidget, root))
 
         # 新しいFrameを作成
         frameWidget = imgFrame.frameGUI(root, parentFrameWidget.winfo_width(), parentFrameWidget.winfo_height())
@@ -81,9 +83,14 @@ class panedWindow(tk.Frame):
         # 新しいFrameの機能を追加
         frameWidget.popUpMenu.add_command(label='ウィンドウを縦に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "|", root))
         frameWidget.popUpMenu.add_command(label='ウィンドウを横に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "-", root))
+        frameWidget.popUpMenu.add_command(label='ウィンドウを削除',underline=5,command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, frameWidget, root))
         frameWidget.update()
 
 
         # FrameをPanedWindowに追加
         panedWindow.add(parentFrameWidget.app_frame) # 親Frame
         panedWindow.add(frameWidget.app_frame) # 新しいFrame
+
+    def forget_paned_frame(self, parentParentPanedWindow, parentPanedWindow, parentFrameWidget, root):
+        print(parentPanedWindow.panes())
+        parentPanedWindow.forget(parentFrameWidget.app_frame)
