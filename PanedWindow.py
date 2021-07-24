@@ -92,5 +92,7 @@ class panedWindow(tk.Frame):
         panedWindow.add(frameWidget.app_frame) # 新しいFrame
 
     def forget_paned_frame(self, parentParentPanedWindow, parentPanedWindow, parentFrameWidget, root):
-        print(parentPanedWindow.panes())
         parentPanedWindow.forget(parentFrameWidget.app_frame)
+        if len(parentPanedWindow.panes()) == 0: #panedWindowの中のFrameが全部削除されたらpanedWindowも削除する
+            parentParentPanedWindow.forget(parentPanedWindow)
+
