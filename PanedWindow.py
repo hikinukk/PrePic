@@ -56,7 +56,20 @@ class panedWindow(tk.Frame):
             parentFrameWidget.resize_frame_x() # 親Frameの縦サイズを半分にする
 
         # 親PanedWindowに新しいPanedWindowを追加
-        parentPanedWindow.add(panedWindow)
+        parentPanedWindowWidget_0 = parentPanedWindow.nametowidget(parentPanedWindow.panes()[0])
+        if len(parentPanedWindow.panes()) == 1: # 初回は窓が一つしかないため
+            print("一回目")
+            parentPanedWindow.add(panedWindow)
+        elif len(parentPanedWindow.panes()) == 2: # ２分割目以降
+            parentPanedWindowWidget_1 = parentPanedWindow.nametowidget(parentPanedWindow.panes()[1])
+            print("len 2: ", parentPanedWindowWidget_1,":",type(parentPanedWindowWidget_1))
+            print("len 2: ", parentFrameWidget.app_frame,":",type(parentFrameWidget.app_frame))
+            if parentPanedWindowWidget_0 == parentFrameWidget.app_frame: # １番目のFrameの分割を選択していた
+                print("一つ目のFrame合致")
+                parentPanedWindow.insert(0, panedWindow)
+            elif parentPanedWindowWidget_1 == parentFrameWidget.app_frame:# ２番目のFrameの分割を選択していた
+                print("二つ目のFrame合致")
+                parentPanedWindow.add(panedWindow)
 
         # 親FrameのparentPanedWindowとparentFrameWidgetを更新
         parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを縦に分割', command=lambda:self.create_paned_frame(panedWindow, parentFrameWidget, "|", root))
@@ -74,6 +87,3 @@ class panedWindow(tk.Frame):
         # FrameをPanedWindowに追加
         panedWindow.add(parentFrameWidget.app_frame) # 親Frame
         panedWindow.add(frameWidget.app_frame) # 新しいFrame
-        
-
-
