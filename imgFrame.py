@@ -268,14 +268,14 @@ class frameGUI(tk.Frame):
 
         # [ポップアップメニュー] - [Command]
         self.popUpMenu.add_cascade(label='フィルタ',menu=self.popUpMenu_filter,under=5)
-        self.popUpMenu_filter.add_command(label='デフォルト',underline=5,command=self.command_filter_default)
-        self.popUpMenu_filter.add_command(label='グレースケール',underline=5,command=self.command_filter_gray)
-        self.popUpMenu_filter.add_command(label='色反転',underline=5,command=self.command_filter_color_inversion)
+        self.popUpMenu_filter.add_radiobutton(label='なし',underline=5,command=self.command_filter_default)
+        self.popUpMenu_filter.add_radiobutton(label='グレースケール',underline=5,command=self.command_filter_gray)
+        self.popUpMenu_filter.add_radiobutton(label='色反転',underline=5,command=self.command_filter_color_inversion)
 
-        self.popUpMenu.add_cascade(label='画面表示',menu=self.popUpMenu_flip,under=5)
+        self.popUpMenu.add_cascade(label='反転',menu=self.popUpMenu_flip,under=5)
         self.popUpMenu_flip.add_command(label='デフォルト',underline=5,command=self.command_flip_default)
-        self.popUpMenu_flip.add_command(label='左右反転',underline=5,command=self.command_flip_horizontal)
-        self.popUpMenu_flip.add_command(label='上下反転',underline=5,command=self.command_flip_upside_down)
+        self.popUpMenu_flip.add_checkbutton(label='左右反転',underline=5,command=self.command_flip_horizontal)
+        self.popUpMenu_flip.add_checkbutton(label='上下反転',underline=5,command=self.command_flip_upside_down)
 
         self.popUpMenu.add_cascade(label='ウィンドウ切り替え', menu=self.popUpMenu_window)
         for window_name in self.window_name_list:
@@ -291,9 +291,16 @@ class frameGUI(tk.Frame):
     def command_filter_default(self): # bデフォルト
         self.color_filter = "default"
     def command_filter_gray(self): # グレースケール
-        self.color_filter = "gray"
+        if self.color_filter == "gray":
+            self.color_filter = "default"
+            self.popUpMenu_filter.invoke('なし')
+        else:
+            self.color_filter = "gray"
     def command_filter_color_inversion(self): # 色反転
-        self.color_filter = "inversion"
+        if self.color_filter == "inversion":
+            self.color_filter = "default"
+        else:
+            self.color_filter = "inversion"
 
     def command_flip_default(self): # デフォルト
         self.is_image_flip_horizontal = False
