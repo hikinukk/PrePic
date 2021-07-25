@@ -24,7 +24,8 @@ class panedWindow(tk.Frame):
     def __init__(self, root ,master=None ):
         super().__init__(master)
 
-        # self.panedWindow_list = []
+        self.panedWindow_count = 1 # アクティブ中のウィンドウの数
+        imgFrame.frameGUI.panedWindow_count = self.panedWindow_count
 
         # 親PanedWindowの作成
         self.parentWindow = ttk.PanedWindow(root, orient = 'horizontal') 
@@ -39,13 +40,11 @@ class panedWindow(tk.Frame):
         frameWidget = imgFrame.frameGUI(root, WIDTH, HEIGHT)
         frameWidget.popUpMenu.add_command(label='ウィンドウを縦に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "|", root))
         frameWidget.popUpMenu.add_command(label='ウィンドウを横に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "-", root))
-        frameWidget.popUpMenu.add_command(label='ウィンドウを削除',underline=5,command=lambda:self.forget_paned_frame(self.parentWindow, frameWidget, root))
+        frameWidget.popUpMenu.add_command(label='ウィンドウを削除',underline=5,command=lambda:self.forget_paned_frame(self.parentWindow, frameWidget, frameWidget, root))
         frameWidget.update()
 
         # フレームをPanedWindowに追加
         panedWindow.add(frameWidget.app_frame)
-
-        # self.panedWindow_list.append(self.panedWindow)
 
     def create_paned_frame(self, parentPanedWindow, parentFrameWidget, direction, root):
         # PanedWindowの作成
@@ -75,7 +74,7 @@ class panedWindow(tk.Frame):
         # 親FrameのparentPanedWindowとparentFrameWidgetを更新
         parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを縦に分割', command=lambda:self.create_paned_frame(panedWindow, parentFrameWidget, "|", root))
         parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを横に分割', command=lambda:self.create_paned_frame(panedWindow, parentFrameWidget, "-", root))
-        parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを削除',command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, parentFrameWidget, root))
+        parentFrameWidget.popUpMenu.entryconfigure('ウィンドウを削除', command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, parentFrameWidget, root))
 
         # 新しいFrameを作成
         frameWidget = imgFrame.frameGUI(root, parentFrameWidget.winfo_width(), parentFrameWidget.winfo_height())
@@ -83,16 +82,22 @@ class panedWindow(tk.Frame):
         # 新しいFrameの機能を追加
         frameWidget.popUpMenu.add_command(label='ウィンドウを縦に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "|", root))
         frameWidget.popUpMenu.add_command(label='ウィンドウを横に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "-", root))
-        frameWidget.popUpMenu.add_command(label='ウィンドウを削除',underline=5,command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, frameWidget, root))
+        frameWidget.popUpMenu.add_command(label='ウィンドウを削除', underline=5,command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, frameWidget, root), state='active')
         frameWidget.update()
-
 
         # FrameをPanedWindowに追加
         panedWindow.add(parentFrameWidget.app_frame) # 親Frame
         panedWindow.add(frameWidget.app_frame) # 新しいFrame
 
+        self.panedWindow_count+=1
+        imgFrame.frameGUI.panedWindow_count = self.panedWindow_count
+
+    # ウィンドウの削除
     def forget_paned_frame(self, parentParentPanedWindow, parentPanedWindow, parentFrameWidget, root):
         parentPanedWindow.forget(parentFrameWidget.app_frame)
         if len(parentPanedWindow.panes()) == 0: #panedWindowの中のFrameが全部削除されたらpanedWindowも削除する
             parentParentPanedWindow.forget(parentPanedWindow)
+
+        self.panedWindow_count-=1
+        imgFrame.frameGUI.panedWindow_count = self.panedWindow_count
 

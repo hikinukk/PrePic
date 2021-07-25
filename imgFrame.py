@@ -15,6 +15,8 @@ import mss
 import sys
 
 class frameGUI(tk.Frame):
+    panedWindow_count = 1                  # ウィンドウの数（削除する有効化無効化判定に使用）
+
     def __init__(self, root, frame_width, frame_height, master=None ):
         super().__init__(master)
         self.root = root
@@ -245,7 +247,12 @@ class frameGUI(tk.Frame):
 
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
+        # ウィンドウ一覧を更新
         self.update_command_window_name()
+
+        # ウィンドウ削除の有効化、無効化
+        self.popUpMenu.entryconfigure('ウィンドウを削除', state=self.getCanFogetState())
+
         self.popUpMenu.post(event.x_root, event.y_root)
 
     def create_popupmenu(self):
@@ -304,6 +311,13 @@ class frameGUI(tk.Frame):
         self.focus_window_name = name
         self.window_handle = frameGUI.GetWindowHandleFromName(self.focus_window_name)
         print(self.focus_window_name, 'を選択')
+
+    # ウィンドウ削除の有効化無効化
+    def getCanFogetState(self):
+        if frameGUI.panedWindow_count == 1:
+            return 'disabled'
+        else:
+            return 'active'
 
     def command_finish(self):
         print("終了")
