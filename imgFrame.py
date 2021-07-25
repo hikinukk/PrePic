@@ -85,6 +85,13 @@ class frameGUI(tk.Frame):
 
     # 画像を更新する処理
     def update_canvas(self):
+        # 画像処理系のコマンドをウィンドウ取得状態になったら有効化、ウィンドウ取得状態じゃなくなったら無効化
+        pop_up_menu_state = self.popUpMenu.entrycget('フィルタ', 'state')
+        is_focus_window_state = True if pop_up_menu_state == 'normal' or pop_up_menu_state == 'active' else False
+        if self.is_focus_window != is_focus_window_state:
+            self.popUpMenu.entryconfigure('フィルタ', state=self.getCanCommandState())
+            self.popUpMenu.entryconfigure('反転', state=self.getCanCommandState())
+
         if self.focus_window_name == "":
             self.is_focus_window = False
             return
@@ -101,6 +108,7 @@ class frameGUI(tk.Frame):
             # 閉じられる前と同じ名前のウィンドウが開いたら自動的にハンドル取得
             self.window_handle = frameGUI.GetWindowHandleFromName(self.focus_window_name)
             return
+
 
         self.is_focus_window = True
 
@@ -266,35 +274,46 @@ class frameGUI(tk.Frame):
         self.popUpMenu_flip = tk.Menu(self.popUpMenu, tearoff = False)
         self.popUpMenu_window = tk.Menu(self.popUpMenu, tearoff = False)
 
-        # [ポップアップメニュー] - [Command]
-        self.popUpMenu.add_cascade(label='フィルタ',menu=self.popUpMenu_filter,under=5)
-        self.popUpMenu_filter.add_command(label='デフォルト',underline=5,command=self.command_filter_default)
-        self.popUpMenu_filter.add_command(label='グレースケール',underline=5,command=self.command_filter_gray)
-        self.popUpMenu_filter.add_command(label='色反転',underline=5,command=self.command_filter_color_inversion)
+        # [ポップアップメニュー] - [Command] - [フィルタ]
+        self.popUpMenu.add_cascade(label='フィルタ',menu=self.popUpMenu_filter,under=5, state='disable')
+        self.popUpMenu_filter.add_radiobutton(label='なし',underline=5,command=self.command_filter_default)
+        self.popUpMenu_filter.add_radiobutton(label='グレースケール',underline=5,command=self.command_filter_gray)
+        self.popUpMenu_filter.add_radiobutton(label='色反転',underline=5,command=self.command_filter_color_inversion)
 
-        self.popUpMenu.add_cascade(label='画面表示',menu=self.popUpMenu_flip,under=5)
+        # [ポップアップメニュー] - [Command] - [反転]
+        self.popUpMenu.add_cascade(label='反転',menu=self.popUpMenu_flip,under=5, state='disable')
         self.popUpMenu_flip.add_command(label='デフォルト',underline=5,command=self.command_flip_default)
-        self.popUpMenu_flip.add_command(label='左右反転',underline=5,command=self.command_flip_horizontal)
-        self.popUpMenu_flip.add_command(label='上下反転',underline=5,command=self.command_flip_upside_down)
+        self.popUpMenu_flip.add_checkbutton(label='左右反転',underline=5,command=self.command_flip_horizontal)
+        self.popUpMenu_flip.add_checkbutton(label='上下反転',underline=5,command=self.command_flip_upside_down)
 
+        # [ポップアップメニュー] - [Command]
         self.popUpMenu.add_cascade(label='ウィンドウ切り替え', menu=self.popUpMenu_window)
         for window_name in self.window_name_list:
             self.popUpMenu_window.add_command(label=window_name, command= lambda window_name = window_name: self.command_window_change(window_name))
 
         self.popUpMenu.add_command(label = "終了", command=self.command_finish)
 
-
         # 右クリックイベント関連付け
         self.canvas.bind("<Button-3>", self.show_popupmenu)
 
-    # Command処理
-    def command_filter_default(self): # bデフォルト
+    # ----------------------ポップアップメニュー/画像処理の設定----------------------
+    # フィルタ
+    def command_filter_default(self): # デフォルト
         self.color_filter = "default"
     def command_filter_gray(self): # グレースケール
-        self.color_filter = "gray"
+        if self.color_filter == "gray":
+            self.color_filter = "default"
+            self.popUpMenu_filter.invoke('なし')
+        else:
+            self.color_filter = "gray"
     def command_filter_color_inversion(self): # 色反転
-        self.color_filter = "inversion"
+        if self.color_filter == "inversion":
+            self.color_filter = "default"
+            self.popUpMenu_filter.invoke('なし')
+        else:
+            self.color_filter = "inversion"
 
+    # 反転
     def command_flip_default(self): # デフォルト
         self.is_image_flip_horizontal = False
         self.is_image_flip_upside_down = False
@@ -321,13 +340,19 @@ class frameGUI(tk.Frame):
         if frameGUI.panedWindow_count == 1:
             return 'disabled'
         else:
-            return 'active'
+            return 'normal'
 
+    # フィルタ・反転コマンドの有効化無効化
+    def getCanCommandState(self):
+        if self.is_focus_window == False:
+            return 'disabled'
+        else:
+            return 'normal'
+
+    # ----------------------終了時の処理----------------------
     def command_finish(self):
         print("終了")
         sys.exit()
-
-    
 
     def doSomething(self):
         print("終了")
@@ -381,9 +406,3 @@ class frameGUI(tk.Frame):
         self.window_name_list = self.window_title_delete_null(self.get_window_title())
         for i, window_name in enumerate(self.window_name_list):
             self.popUpMenu_window.entryconfigure(i, label=window_name, command= lambda window_name = window_name: self.command_window_change(window_name))
-
-
-
-# if __name__ == '__main__':
-#     self.root = tk.Tk()
-#     gui = frameGUI(master=self.root)
