@@ -253,6 +253,10 @@ class frameGUI(tk.Frame):
         # ウィンドウ削除の有効化、無効化
         self.popUpMenu.entryconfigure('ウィンドウを削除', state=self.getCanFogetState())
 
+        # 何があっても終了を一番下に設置する
+        self.popUpMenu.delete("終了")
+        self.popUpMenu.add_command(label = "終了", command=self.command_finish)
+
         self.popUpMenu.post(event.x_root, event.y_root)
 
     def create_popupmenu(self):
