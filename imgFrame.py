@@ -85,6 +85,13 @@ class frameGUI(tk.Frame):
 
     # 画像を更新する処理
     def update_canvas(self):
+        # 画像処理系のコマンドをウィンドウ取得状態になったら有効化、ウィンドウ取得状態じゃなくなったら無効化
+        pop_up_menu_state = self.popUpMenu.entrycget('フィルタ', 'state')
+        is_focus_window_state = True if pop_up_menu_state == 'normal' or pop_up_menu_state == 'active' else False
+        if self.is_focus_window != is_focus_window_state:
+            self.popUpMenu.entryconfigure('フィルタ', state=self.getCanCommandState())
+            self.popUpMenu.entryconfigure('反転', state=self.getCanCommandState())
+
         if self.focus_window_name == "":
             self.is_focus_window = False
             return
@@ -101,6 +108,7 @@ class frameGUI(tk.Frame):
             # 閉じられる前と同じ名前のウィンドウが開いたら自動的にハンドル取得
             self.window_handle = frameGUI.GetWindowHandleFromName(self.focus_window_name)
             return
+
 
         self.is_focus_window = True
 
@@ -267,12 +275,12 @@ class frameGUI(tk.Frame):
         self.popUpMenu_window = tk.Menu(self.popUpMenu, tearoff = False)
 
         # [ポップアップメニュー] - [Command]
-        self.popUpMenu.add_cascade(label='フィルタ',menu=self.popUpMenu_filter,under=5)
+        self.popUpMenu.add_cascade(label='フィルタ',menu=self.popUpMenu_filter,under=5, state='disable')
         self.popUpMenu_filter.add_radiobutton(label='なし',underline=5,command=self.command_filter_default)
         self.popUpMenu_filter.add_radiobutton(label='グレースケール',underline=5,command=self.command_filter_gray)
         self.popUpMenu_filter.add_radiobutton(label='色反転',underline=5,command=self.command_filter_color_inversion)
 
-        self.popUpMenu.add_cascade(label='反転',menu=self.popUpMenu_flip,under=5)
+        self.popUpMenu.add_cascade(label='反転',menu=self.popUpMenu_flip,under=5, state='disable')
         self.popUpMenu_flip.add_command(label='デフォルト',underline=5,command=self.command_flip_default)
         self.popUpMenu_flip.add_checkbutton(label='左右反転',underline=5,command=self.command_flip_horizontal)
         self.popUpMenu_flip.add_checkbutton(label='上下反転',underline=5,command=self.command_flip_upside_down)
@@ -328,7 +336,13 @@ class frameGUI(tk.Frame):
         if frameGUI.panedWindow_count == 1:
             return 'disabled'
         else:
-            return 'active'
+            return 'normal'
+
+    def getCanCommandState(self):
+        if self.is_focus_window == False:
+            return 'disabled'
+        else:
+            return 'normal'
 
     def command_finish(self):
         print("終了")

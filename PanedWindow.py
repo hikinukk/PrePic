@@ -77,7 +77,7 @@ class panedWindow(tk.Frame):
         # 新しいFrameの機能を追加
         frameWidget.popUpMenu.add_command(label='ウィンドウを縦に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "|", root))
         frameWidget.popUpMenu.add_command(label='ウィンドウを横に分割',underline=5,command=lambda:self.create_paned_frame(panedWindow, frameWidget, "-", root))
-        frameWidget.popUpMenu.add_command(label='ウィンドウを削除', underline=5,command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, frameWidget, root), state='active')
+        frameWidget.popUpMenu.add_command(label='ウィンドウを削除', underline=5,command=lambda:self.forget_paned_frame(parentPanedWindow, panedWindow, frameWidget, root), state='normal')
         frameWidget.update()
 
         # FrameをPanedWindowに追加
