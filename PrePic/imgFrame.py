@@ -81,7 +81,7 @@ class frameGUI(tk.Frame):
 
     def update(self):
         self.update_canvas()
-        self.after(60,self.update)
+        self.after(120,self.update)
 
     # 画像を更新する処理
     def update_canvas(self):
