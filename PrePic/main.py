@@ -5,7 +5,7 @@ import tkinter.ttk as ttk
 import PanedWindow
 
 
-class viewerGUI(ttk.Frame):
+class ViewerGUI(ttk.Frame):
     def __init__(self, root, master=None):
         super().__init__(master)
 
@@ -17,4 +17,4 @@ class viewerGUI(ttk.Frame):
 
 if __name__ == '__main__':
     root = tk.Tk()
-    gui = viewerGUI(root, master=root)
+    gui = ViewerGUI(root, master=root)
