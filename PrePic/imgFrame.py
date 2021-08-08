@@ -14,7 +14,7 @@ import sys
 
 
 class frameGUI(tk.Frame):
-    paned_window_count = 1                  # ウィンドウの数（削除する有効化無効化判定に使用）
+    p_window_count = 1                  # ウィンドウの数（削除する有効化無効化判定に使用）
 
     def __init__(self, root, frame_width, frame_height, master=None):
         super().__init__(master)
@@ -90,17 +90,21 @@ class frameGUI(tk.Frame):
     # 画像を更新する処理
     def update_canvas(self):
         # 画像処理系のコマンドをウィンドウ取得状態になったら有効化、ウィンドウ取得状態じゃなくなったら無効化
-        pop_up_menu_state = self.popup_menu.entrycget('フィルタ', 'state')
-        is_focus_window_state = True if pop_up_menu_state == 'normal' or pop_up_menu_state == 'active' else False
+        menu_state = self.menu.entrycget('フィルタ', 'state')
+        is_focus_window_state = (True
+                                 if menu_state == 'normal'
+                                 or menu_state == 'active'
+                                 else False)
         if self.is_focus_window != is_focus_window_state:
-            self.popup_menu.entryconfigure(
-                'フィルタ', state=self.get_can_command_state())
-            self.popup_menu.entryconfigure(
-                '反転', state=self.get_can_command_state())
+            self.menu.entryconfigure('フィルタ',
+                                     state=self.get_can_state())
+            self.menu.entryconfigure('反転',
+                                     state=self.get_can_state())
 
         if self.focus_window_name == "":
             self.is_focus_window = False
             return
+
         # ハンドルからキャプチャウィンドウのサイズを取得
         self.window_size = self.get_window_rect_from_handle(self.window_handle)
         # 画像読み込み(mssとImageGrabどっちがいいのかまだわかってない)
@@ -129,9 +133,11 @@ class frameGUI(tk.Frame):
         # self.app_right = self.app_frame.winfo_y() + self.app_frame.winfo_height()
 
         self.app_top = self.app_frame.winfo_rootx()
-        self.app_bottom = self.app_frame.winfo_rootx() + self.app_frame.winfo_width()
+        self.app_bottom = (self.app_frame.winfo_rootx()
+                           + self.app_frame.winfo_width())
         self.app_left = self.app_frame.winfo_rooty()
-        self.app_right = self.app_frame.winfo_rooty() + self.app_frame.winfo_height()
+        self.app_right = (self.app_frame.winfo_rooty()
+                          + self.app_frame.winfo_height())
 
         # canvasの大きさ取得
         self.canvas_top = self.canvas.winfo_x()
@@ -147,8 +153,8 @@ class frameGUI(tk.Frame):
         # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
         # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
         # 倍率反映
-        self.cv_img = cv2.resize(
-            self.cv_img, dsize=None, fx=self.scale, fy=self.scale)
+        self.cv_img = cv2.resize(self.cv_img, dsize=None,
+                                 fx=self.scale, fy=self.scale)
 
         # print(self.app_frame.winfo_width())
         # canvasからはみ出た部分は削除
@@ -188,10 +194,9 @@ class frameGUI(tk.Frame):
         # canvasに画像を表示
         self.im = ImageTk.PhotoImage(image=Image.fromarray(self.cv_img))
         # 開きたては真ん中に表示　それ以外はウィンドウの大きさによって位置を変化
-        self.canvas.create_image(
-            self.image_move_wonfo_x,
-            self.image_move_wonfo_y,
-            image=self.im)
+        self.canvas.create_image(self.image_move_wonfo_x,
+                                 self.image_move_wonfo_y,
+                                 image=self.im)
 
     # canvasの中身の位置を変更
     def configure_frame_move_img(self, event):
@@ -274,104 +279,105 @@ class frameGUI(tk.Frame):
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
         # ウィンドウ一覧を更新
-        self.update_command_window_name()
+        self.update_window_name()
 
         # ウィンドウ削除の有効化、無効化
-        self.popup_menu.entryconfigure(
+        self.menu.entryconfigure(
             'ウィンドウを削除', state=self.get_can_foget_state())
 
         # 何があっても終了を一番下に設置する
-        self.popup_menu.delete("終了")
-        self.popup_menu.add_command(label="終了", command=self.command_finish)
+        self.menu.delete("終了")
+        self.menu.add_command(label="終了", command=self.finish)
 
-        self.popup_menu.post(event.x_root, event.y_root)
+        self.menu.post(event.x_root, event.y_root)
 
     def create_popupmenu(self):
         # ポップアップメニューの設定
-        self.popup_menu = tk.Menu(self.app_frame, tearoff=False)
-        self.popup_menu_filter = tk.Menu(self.popup_menu, tearoff=False)
-        self.popup_menu_flip = tk.Menu(self.popup_menu, tearoff=False)
-        self.popup_menu_window = tk.Menu(self.popup_menu, tearoff=False)
+        self.menu = tk.Menu(self.app_frame, tearoff=False)
+        self.menu_filter = tk.Menu(self.menu, tearoff=False)
+        self.menu_flip = tk.Menu(self.menu, tearoff=False)
+        self.menu_window = tk.Menu(self.menu, tearoff=False)
 
         # [ポップアップメニュー] - [Command] - [フィルタ]
-        self.popup_menu.add_cascade(
-            label='フィルタ', menu=self.popup_menu_filter,
+        self.menu.add_cascade(
+            label='フィルタ', menu=self.menu_filter,
             under=5, state='disable')
-        self.popup_menu_filter.add_radiobutton(
+        self.menu_filter.add_radiobutton(
             label='なし', underline=5,
-            command=self.command_filter_default)
-        self.popup_menu_filter.add_radiobutton(
+            command=self.filter_default)
+        self.menu_filter.add_radiobutton(
             label='グレースケール', underline=5,
-            command=self.command_filter_gray)
-        self.popup_menu_filter.add_radiobutton(
+            command=self.filter_gray)
+        self.menu_filter.add_radiobutton(
             label='色反転', underline=5,
-            command=self.command_filter_color_inversion)
+            command=self.filter_color_inversion)
 
         # [ポップアップメニュー] - [Command] - [反転]
-        self.popup_menu.add_cascade(
-            label='反転', menu=self.popup_menu_flip,
+        self.menu.add_cascade(
+            label='反転', menu=self.menu_flip,
             under=5, state='disable')
-        self.popup_menu_flip.add_command(
+        self.menu_flip.add_command(
             label='デフォルト', underline=5,
-            command=self.command_flip_default)
-        self.popup_menu_flip.add_checkbutton(
+            command=self.flip_default)
+        self.menu_flip.add_checkbutton(
             label='左右反転', underline=5,
-            command=self.command_flip_horizontal)
-        self.popup_menu_flip.add_checkbutton(
+            command=self.flip_horizontal)
+        self.menu_flip.add_checkbutton(
             label='上下反転', underline=5,
-            command=self.command_flip_upside_down)
+            command=self.flip_upside_down)
 
         # [ポップアップメニュー] - [Command]
-        self.popup_menu.add_cascade(label='ウィンドウ切り替え',
-                                    menu=self.popup_menu_window)
+        self.menu.add_cascade(label='ウィンドウ切り替え',
+                                    menu=self.menu_window)
         for window_name in self.window_name_list:
-            self.popup_menu_window.add_command(label=window_name,
-                                               command=lambda window_name=window_name:
-                                               self.command_window_change(window_name))
+            self.menu_window.add_command(label=window_name,
+                                         command=lambda
+                                         window_name=window_name:
+                                         self.window_change(window_name))
 
-        self.popup_menu.add_command(label="終了", command=self.command_finish)
+        self.menu.add_command(label="終了", command=self.finish)
 
         # 右クリックイベント関連付け
         self.canvas.bind("<Button-3>", self.show_popupmenu)
 
     # ----------------------ポップアップメニュー/画像処理の設定----------------------
     # フィルタ
-    def command_filter_default(self):  # デフォルト
+    def filter_default(self):  # デフォルト
         self.color_filter = "default"
 
-    def command_filter_gray(self):  # グレースケール
+    def filter_gray(self):  # グレースケール
         if self.color_filter == "gray":
             self.color_filter = "default"
-            self.popup_menu_filter.invoke('なし')
+            self.menu_filter.invoke('なし')
         else:
             self.color_filter = "gray"
 
-    def command_filter_color_inversion(self):  # 色反転
+    def filter_color_inversion(self):  # 色反転
         if self.color_filter == "inversion":
             self.color_filter = "default"
-            self.popup_menu_filter.invoke('なし')
+            self.menu_filter.invoke('なし')
         else:
             self.color_filter = "inversion"
 
     # 反転
-    def command_flip_default(self):  # デフォルト
+    def flip_default(self):  # デフォルト
         self.is_image_flip_horizontal = False
         self.is_image_flip_upside_down = False
 
-    def command_flip_horizontal(self):  # 左右反転
+    def flip_horizontal(self):  # 左右反転
         if not self.is_image_flip_horizontal:
             self.is_image_flip_horizontal = True
         else:
             self.is_image_flip_horizontal = False
 
-    def command_flip_upside_down(self):  # 上下反転
+    def flip_upside_down(self):  # 上下反転
         if not self.is_image_flip_upside_down:
             self.is_image_flip_upside_down = True
         else:
             self.is_image_flip_upside_down = False
 
     # focusしているウィンドウを変更
-    def command_window_change(self, name):
+    def window_change(self, name):
         self.clean_canvas()
         self.focus_window_name = name
         self.window_handle = frameGUI.get_window_handle_from_name(
@@ -380,20 +386,20 @@ class frameGUI(tk.Frame):
 
     # ウィンドウ削除の有効化無効化
     def get_can_foget_state(self):
-        if frameGUI.paned_window_count == 1:
+        if frameGUI.p_window_count == 1:
             return 'disabled'
         else:
             return 'normal'
 
     # フィルタ・反転コマンドの有効化無効化
-    def get_can_command_state(self):
+    def get_can_state(self):
         if self.is_focus_window is False:
             return 'disabled'
         else:
             return 'normal'
 
     # ----------------------終了時の処理----------------------
-    def command_finish(self):
+    def finish(self):
         print("終了")
         sys.exit()
 
@@ -432,18 +438,17 @@ class frameGUI(tk.Frame):
     def window_title_delete_null(self, window_name_list):
         return [name for name in window_name_list if name != '']
 
-    # ウィンドウの名前からウィンドウの位置を取得
-    def get_window_handle_from_name(target_window_title: str) -> tuple:
-        target_window_handle = ctypes.windll.user32.FindWindowW(
-            0, target_window_title)  # ウィンドウハンドル取得
-        return target_window_handle
+    # ウィンドウの名前からウィンドウハンドルを取得
+    def get_window_handle_from_name(window_title: str) -> tuple:
+        window_handle = ctypes.windll.user32.FindWindowW(
+            0, window_title)
+        return window_handle
 
     # ウィンドウハンドルから位置を取得
-
-    def get_window_rect_from_handle(self, target_window_handle):
+    def get_window_rect_from_handle(self, window_handle):
         Rectangle = ctypes.wintypes.RECT()
         ctypes.windll.user32.GetWindowRect(
-            target_window_handle, ctypes.pointer(Rectangle))
+            window_handle, ctypes.pointer(Rectangle))
         # print(Rectangle.left,',', Rectangle.top,',', Rectangle.right,',' ,Rectangle.bottom)
         return (Rectangle.left,
                 Rectangle.top,
@@ -452,10 +457,11 @@ class frameGUI(tk.Frame):
 
     # ウィンドウ一覧を更新
 
-    def update_command_window_name(self):
+    def update_window_name(self):
         self.window_name_list = self.window_title_delete_null(
             self.get_window_title())
         for i, window_name in enumerate(self.window_name_list):
-            self.popup_menu_window.entryconfigure(i, label=window_name,
-                                                  command=lambda window_name=window_name:
-                                                  self.command_window_change(window_name))
+            self.menu_window.entryconfigure(i, label=window_name,
+                                            command=lambda
+                                            window_name=window_name:
+                                            self.window_change(window_name))

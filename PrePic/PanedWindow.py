@@ -14,128 +14,130 @@ class PanedWindow(tk.Frame):
     def __init__(self, root, master=None):
         super().__init__(master)
 
-        self.paned_window_count = 1  # アクティブ中のウィンドウの数
-        imgFrame.frameGUI.paned_window_count = self.paned_window_count
+        self.p_window_count = 1  # アクティブ中のウィンドウの数
+        imgFrame.frameGUI.p_window_count = self.p_window_count
 
         # 親PanedWindowの作成
-        self.parent_window = ttk.PanedWindow(root, orient='horizontal')
-        self.parent_window.pack(expand=True, fill=tk.BOTH)
+        self.parent_p_window = ttk.PanedWindow(root, orient='horizontal')
+        self.parent_p_window.pack(expand=True, fill=tk.BOTH)
 
         # PanedWindowの作成
-        paned_window = ttk.PanedWindow(root, orient='horizontal')
-        # paned_window.pack(expand = True, fill = tk.BOTH)
-        self.parent_window.add(paned_window)
+        p_window = ttk.PanedWindow(root, orient='horizontal')
+        # p_window.pack(expand = True, fill = tk.BOTH)
+        self.parent_p_window.add(p_window)
 
         # Frameの作成
-        frame_widget = imgFrame.frameGUI(root, WIDTH, HEIGHT)
+        frame = imgFrame.frameGUI(root, WIDTH, HEIGHT)
 
-        frame_widget.popup_menu.add_command(label='ウィンドウを縦に分割',
-                                            underline=5,
-                                            command=lambda:
-                                            self.create_paned_frame(paned_window,
-                                                                    frame_widget,
-                                                                    "|", root))
-        frame_widget.popup_menu.add_command(label='ウィンドウを横に分割',
-                                            underline=5,
-                                            command=lambda:
-                                            self.create_paned_frame(paned_window,
-                                                                    frame_widget,
-                                                                    "-", root))
-        frame_widget.popup_menu.add_command(label='ウィンドウを削除',
-                                            underline=5,
-                                            command=lambda:
-                                            self.forget_paned_frame(self.parent_window,
-                                                                    frame_widget,
-                                                                    frame_widget,
-                                                                    root))
-        frame_widget.update()
+        frame.menu.add_command(label='ウィンドウを縦に分割',
+                               underline=5,
+                               command=lambda:
+                               self.create_p_window(p_window,
+                                                    frame, "|", root))
+        frame.menu.add_command(label='ウィンドウを横に分割',
+                               underline=5,
+                               command=lambda:
+                               self.create_p_window(p_window,
+                                                    frame, "-", root))
+        frame.menu.add_command(label='ウィンドウを削除',
+                               underline=5,
+                               command=lambda:
+                               self.forget_frame(self.parent_p_window,
+                                                 frame, frame, root))
+        frame.update()
 
         # フレームをPanedWindowに追加
-        paned_window.add(frame_widget.app_frame)
+        p_window.add(frame.app_frame)
 
-    def create_paned_frame(self, parent_paned_window,
-                           parent_frame_widget, direction, root):
+    def create_p_window(self, parent_p_window,
+                        parent_frame, direction, root):
 
         # PanedWindowの作成
         if direction == "|":  # 垂直方向のpanedWindowを作成
-            paned_window = ttk.PanedWindow(parent_paned_window,
-                                           orient='horizontal')
-            parent_frame_widget.resize_frame_y()  # 親Frameの横サイズを半分にする
+            p_window = ttk.PanedWindow(parent_p_window,
+                                       orient='horizontal')
+            parent_frame.resize_frame_y()  # 親Frameの横サイズを半分にする
         elif direction == "-":  # 平行方向のpanedWindowを作成
-            paned_window = ttk.PanedWindow(parent_paned_window,
-                                           orient='vertical')
-            parent_frame_widget.resize_frame_x()  # 親Frameの縦サイズを半分にする
+            p_window = ttk.PanedWindow(parent_p_window,
+                                       orient='vertical')
+            parent_frame.resize_frame_x()  # 親Frameの縦サイズを半分にする
 
         # 親PanedWindowに新しいPanedWindowを追加
-        parent_paned_window_widget_0 = parent_paned_window.nametowidget(
-            parent_paned_window.panes()[0])
-        if len(parent_paned_window.panes()) == 1:  # 初回は窓が一つしかないため
-            parent_paned_window.add(paned_window)
-        elif len(parent_paned_window.panes()) == 2:  # ２分割目以降
-            parent_paned_window_widget_1 = parent_paned_window.nametowidget(
-                parent_paned_window.panes()[1])
+        if len(parent_p_window.panes()) == 1:  # 初回は窓が一つしかないため
+            parent_p_window.add(p_window)
+
+        elif len(parent_p_window.panes()) == 2:  # ２分割目以降
+            parent_p_window_0 = parent_p_window.nametowidget(
+                parent_p_window.panes()[0])
+            parent_p_window_1 = parent_p_window.nametowidget(
+                parent_p_window.panes()[1])
+
             # １番目のFrameの分割を選択していた
-            if parent_paned_window_widget_0 == parent_frame_widget.app_frame:
-                parent_paned_window.insert(0, paned_window)
+            if parent_p_window_0 == parent_frame.app_frame:
+                parent_p_window.insert(0, p_window)
+
             # ２番目のFrameの分割を選択していた
-            elif parent_paned_window_widget_1 == parent_frame_widget.app_frame:
-                parent_paned_window.add(paned_window)
+            elif parent_p_window_1 == parent_frame.app_frame:
+                parent_p_window.add(p_window)
 
         # 親FrameのparentPanedWindowとparentFrameWidgetを更新
-        parent_frame_widget.popup_menu.entryconfigure('ウィンドウを縦に分割',
-                                                      command=lambda:
-                                                      self.create_paned_frame(paned_window,
-                                                                              parent_frame_widget,
-                                                                              "|", root))
+        parent_frame.menu.entryconfigure('ウィンドウを縦に分割',
+                                         command=lambda:
+                                         self.create_p_window(p_window,
+                                                              parent_frame,
+                                                              "|", root))
 
-        parent_frame_widget.popup_menu.entryconfigure('ウィンドウを横に分割',
-                                                      command=lambda:
-                                                      self.create_paned_frame(paned_window,
-                                                                              parent_frame_widget,
-                                                                              "-", root))
+        parent_frame.menu.entryconfigure('ウィンドウを横に分割',
+                                         command=lambda:
+                                         self.create_p_window(p_window,
+                                                              parent_frame,
+                                                              "-", root))
 
-        parent_frame_widget.popup_menu.entryconfigure('ウィンドウを削除',
-                                                      command=lambda:
-                                                      self.forget_paned_frame(parent_paned_window, paned_window,
-                                                                              parent_frame_widget, root))
+        parent_frame.menu.entryconfigure('ウィンドウを削除',
+                                         command=lambda:
+                                         self.forget_frame(parent_p_window,
+                                                           p_window,
+                                                           parent_frame,
+                                                           root))
 
         # 新しいFrameを作成
-        frame_widget = imgFrame.frameGUI(root, parent_frame_widget.winfo_width(),
-                                         parent_frame_widget.winfo_height())
+        frame = imgFrame.frameGUI(root,
+                                  parent_frame.winfo_width(),
+                                  parent_frame.winfo_height())
 
         # 新しいFrameの機能を追加
-        frame_widget.popup_menu.add_command(label='ウィンドウを縦に分割',
-                                            underline=5,
-                                            command=lambda:
-                                            self.create_paned_frame(
-                                                paned_window, frame_widget,
-                                                "|", root))
-        frame_widget.popup_menu.add_command(label='ウィンドウを横に分割',
-                                            underline=5,
-                                            command=lambda:
-                                            self.create_paned_frame(paned_window, frame_widget,
-                                                                    "-", root))
-        frame_widget.popup_menu.add_command(label='ウィンドウを削除', underline=5,
-                                            command=lambda:
-                                            self.forget_paned_frame(parent_paned_window, paned_window,
-                                                                    frame_widget, root),
-                                            state='normal')
-        frame_widget.update()
+        frame.menu.add_command(label='ウィンドウを縦に分割',
+                               underline=5,
+                               command=lambda:
+                               self.create_p_window(p_window,
+                                                    frame, "|", root))
+        frame.menu.add_command(label='ウィンドウを横に分割',
+                               underline=5,
+                               command=lambda:
+                               self.create_p_window(p_window,
+                                                    frame, "-", root))
+        frame.menu.add_command(label='ウィンドウを削除',
+                               underline=5,
+                               command=lambda:
+                               self.forget_frame(parent_p_window,
+                                                 p_window, frame, root)
+                               )
+        frame.update()
 
         # FrameをPanedWindowに追加
-        paned_window.add(parent_frame_widget.app_frame)  # 親Frame
-        paned_window.add(frame_widget.app_frame)  # 新しいFrame
+        p_window.add(parent_frame.app_frame)  # 親Frame
+        p_window.add(frame.app_frame)  # 新しいFrame
 
-        self.paned_window_count += 1
-        imgFrame.frameGUI.paned_window_count = self.paned_window_count
+        self.p_window_count += 1
+        imgFrame.frameGUI.p_window_count = self.p_window_count
 
     # ウィンドウの削除
-    def forget_paned_frame(self, parent_parent_paned_window,
-                           parent_paned_window, parent_frame_widget, root):
-        parent_paned_window.forget(parent_frame_widget.app_frame)
+    def forget_frame(self, parent_parent_p_window,
+                     parent_p_window, parent_frame, root):
+        parent_p_window.forget(parent_frame.app_frame)
         # panedWindowの中のFrameが全部削除されたらpanedWindowも削除する
-        if len(parent_paned_window.panes()) == 0:
-            parent_parent_paned_window.forget(parent_paned_window)
+        if len(parent_p_window.panes()) == 0:
+            parent_parent_p_window.forget(parent_p_window)
 
-        self.paned_window_count -= 1
-        imgFrame.frameGUI.paned_window_count = self.paned_window_count
+        self.p_window_count -= 1
+        imgFrame.frameGUI.p_window_count = self.p_window_count
