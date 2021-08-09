@@ -56,11 +56,11 @@ class PanedWindow(tk.Frame):
         if direction == "|":  # 垂直方向のpanedWindowを作成
             p_window = ttk.PanedWindow(parent_p_window,
                                        orient='horizontal')
-            parent_frame.resize_frame_y()  # 親Frameの横サイズを半分にする
+            parent_frame.resize_half_frame_y()  # 親Frameの横サイズを半分にする
         elif direction == "-":  # 平行方向のpanedWindowを作成
             p_window = ttk.PanedWindow(parent_p_window,
                                        orient='vertical')
-            parent_frame.resize_frame_x()  # 親Frameの縦サイズを半分にする
+            parent_frame.resize_half_frame_x()  # 親Frameの縦サイズを半分にする
 
         # 親PanedWindowに新しいPanedWindowを追加
         if len(parent_p_window.panes()) == 1:  # 初回は窓が一つしかないため

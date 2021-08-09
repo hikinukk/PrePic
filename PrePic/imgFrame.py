@@ -26,9 +26,8 @@ class frameGUI(tk.Frame):
         self.color_filter = "default"               # 色変化
         self.is_image_flip_horizontal = False       # 左右反転有効有無
         self.is_image_flip_upside_down = False       # 上下反転有効有無
-        self.focus_window_name = ""                 # focusしているウィンドウの名前
-        self.window_name_list = self.window_title_delete_null(
-            self.get_window_title())  # 右クリック選択用　開いてるウィンドウ一覧
+        self.focus_window_title = ""                 # focusしているウィンドウの名前
+        self.window_title_list = self.get_window_title_list()  # 右クリック選択用
         self.scale = 1                              # 初期拡大率
         self.isOnMouse = False                      # frameにマウスオーバーしているか
 
@@ -49,10 +48,10 @@ class frameGUI(tk.Frame):
         self.app_frame.bind('<Configure>', self.configure_frame_move_img)
         self.app_frame.pack(expand=False)
 
-    def resize_frame_y(self):
+    def resize_half_frame_y(self):
         self.app_frame.configure(width=self.app_frame.winfo_width()/2)
 
-    def resize_frame_x(self,):
+    def resize_half_frame_x(self):
         self.app_frame.configure(height=self.app_frame.winfo_height()/2)
 
     def enter_mouse(self, event):
@@ -101,7 +100,7 @@ class frameGUI(tk.Frame):
             self.menu.entryconfigure('反転',
                                      state=self.get_can_state())
 
-        if self.focus_window_name == "":
+        if self.focus_window_title == "":
             self.is_focus_window = False
             return
 
@@ -117,7 +116,7 @@ class frameGUI(tk.Frame):
             self.canvas.delete("all")
             # 閉じられる前と同じ名前のウィンドウが開いたら自動的にハンドル取得
             self.window_handle = frameGUI.get_window_handle_from_name(
-                self.focus_window_name)
+                self.focus_window_title)
             return
 
         self.is_focus_window = True
@@ -152,9 +151,10 @@ class frameGUI(tk.Frame):
 
         # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
         # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
-        # 倍率反映
-        self.cv_img = cv2.resize(self.cv_img, dsize=None,
-                                 fx=self.scale, fy=self.scale)
+
+        # # 倍率反映(今は使わない)
+        # self.cv_img = cv2.resize(self.cv_img, dsize=None,
+        #                          fx=self.scale, fy=self.scale)
 
         # print(self.app_frame.winfo_width())
         # canvasからはみ出た部分は削除
@@ -279,7 +279,7 @@ class frameGUI(tk.Frame):
     # ----------------------ポップアップメニューの設定----------------------
     def show_popupmenu(self, event):
         # ウィンドウ一覧を更新
-        self.update_window_name()
+        self.update_window_title()
 
         # ウィンドウ削除の有効化、無効化
         self.menu.entryconfigure(
@@ -329,11 +329,11 @@ class frameGUI(tk.Frame):
         # [ポップアップメニュー] - [Command]
         self.menu.add_cascade(label='ウィンドウ切り替え',
                                     menu=self.menu_window)
-        for window_name in self.window_name_list:
-            self.menu_window.add_command(label=window_name,
+        for window_title in self.window_title_list:
+            self.menu_window.add_command(label=window_title,
                                          command=lambda
-                                         window_name=window_name:
-                                         self.window_change(window_name))
+                                         window_title=window_title:
+                                         self.window_change(window_title))
 
         self.menu.add_command(label="終了", command=self.finish)
 
@@ -379,10 +379,10 @@ class frameGUI(tk.Frame):
     # focusしているウィンドウを変更
     def window_change(self, name):
         self.clean_canvas()
-        self.focus_window_name = name
+        self.focus_window_title = name
         self.window_handle = frameGUI.get_window_handle_from_name(
-            self.focus_window_name)
-        print(self.focus_window_name, 'を選択')
+            self.focus_window_title)
+        print(self.focus_window_title, 'を選択')
 
     # ウィンドウ削除の有効化無効化
     def get_can_foget_state(self):
@@ -409,7 +409,11 @@ class frameGUI(tk.Frame):
 
     # ----------------------ウィンドウハンドラ----------------------
     # ウィンドウ一覧の名前を取得
-    def get_window_title(self):
+    def get_window_title_list(self):
+        return self.window_title_delete_null(
+            self.get_window_title_list_include_null())
+
+    def get_window_title_list_include_null(self):
         # このprintがないと何故か動かない
         print("")
         # コールバック関数を定義(定義のみで実行ではない) コールバック関数はctypes.WINFUNCTYPEで作成可能
@@ -435,8 +439,8 @@ class frameGUI(tk.Frame):
         return title
 
     # get_window_titleで取得したウィンドウ一覧には空の名前が含まれているため取り除く
-    def window_title_delete_null(self, window_name_list):
-        return [name for name in window_name_list if name != '']
+    def window_title_delete_null(self, window_title_list):
+        return [name for name in window_title_list if name != '']
 
     # ウィンドウの名前からウィンドウハンドルを取得
     def get_window_handle_from_name(window_title: str) -> tuple:
@@ -457,11 +461,10 @@ class frameGUI(tk.Frame):
 
     # ウィンドウ一覧を更新
 
-    def update_window_name(self):
-        self.window_name_list = self.window_title_delete_null(
-            self.get_window_title())
-        for i, window_name in enumerate(self.window_name_list):
-            self.menu_window.entryconfigure(i, label=window_name,
+    def update_window_title(self):
+        self.window_title_list = self.get_window_title_list()
+        for i, window_title in enumerate(self.window_title_list):
+            self.menu_window.entryconfigure(i, label=window_title,
                                             command=lambda
-                                            window_name=window_name:
-                                            self.window_change(window_name))
+                                            window_title=window_title:
+                                            self.window_change(window_title))
