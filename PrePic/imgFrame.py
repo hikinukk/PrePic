@@ -12,6 +12,9 @@ import tkinter.ttk as ttk
 import mss
 import sys
 
+SCALEMAX = 1
+SCALEMIN = 0.5
+
 
 class frameGUI(tk.Frame):
     p_window_count = 1                  # ウィンドウの数（削除する有効化無効化判定に使用）
@@ -152,14 +155,28 @@ class frameGUI(tk.Frame):
         # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
         # print('[',self.app_left,':',self.app_right,',',self.app_top,':',self.app_bottom ,']','[',self.canvas_left,':',self.canvas_right,',',self.canvas_top,':',self.canvas_bottom ,']')
 
-        # # 倍率反映(今は使わない)
-        # self.cv_img = cv2.resize(self.cv_img, dsize=None,
-        #                          fx=self.scale, fy=self.scale)
+        # ウィンドウに合わせて画像の大きさを変化
+        img_height = self.cv_img.shape[0]
+        img_width = self.cv_img.shape[1]
+        resize_scale_height = self.canvas_right / img_height
+        resize_scale_width = self.canvas_bottom / img_width
+        if resize_scale_height < 1 or resize_scale_width < 1:
+            self.resize_scale = (resize_scale_height
+                                 if resize_scale_height < resize_scale_width
+                                 else resize_scale_width)
+
+        # 最終的な倍率を計算
+        self.scale = self.resize_scale * self.scroll_scale
+
+        # 倍率を画像に反映
+        self.cv_img = cv2.resize(self.cv_img, dsize=None,
+                                 fx=self.scale, fy=self.scale)
 
         # print(self.app_frame.winfo_width())
-        # canvasからはみ出た部分は削除
-        self.cv_img = self.cv_img[self.canvas_left:self.canvas_right,
-                                  self.canvas_top:self.canvas_bottom]
+        # # canvasからはみ出た部分は削除(廃止)
+        # self.cv_img = self.cv_img[self.canvas_left:self.canvas_right,
+        #                           self.canvas_top:self.canvas_bottom]
+
         # if self.app_left <
         # self.cv_img = self.cv_img[ self.app_left : self.app_right ,self.app_top : self.app_bottom ]
 
@@ -168,9 +185,12 @@ class frameGUI(tk.Frame):
 
         # self.cv_img = self.cv_img[ self.app_left : self.app_right ,self.app_top : self.app_bottom ]
 
-        # 拡大率に合わせてスクロール範囲とスクロールバーの長さの変更
-        self.scrollregion_x = self.canvas_right * 2 * self.scale
-        self.scrollregion_y = self.canvas_bottom * 2 * self.scale
+        # # 拡大率に合わせてスクロール範囲とスクロールバーの長さの変更(廃止)
+        # self.scrollregion_x = self.canvas_right * 2 * self.scroll_scale
+        # self.scrollregion_y = self.canvas_bottom * 2 * self.scroll_scale
+
+        self.scrollregion_x = self.canvas_right * 2
+        self.scrollregion_y = self.canvas_bottom * 2
         # スクロール範囲
         self.canvas.configure(scrollregion=(-self.scrollregion_y,
                                             -self.scrollregion_x,
@@ -214,7 +234,7 @@ class frameGUI(tk.Frame):
         self.color_filter = "default"
         self.is_image_flip_horizontal = False
         self.is_image_flip_upside_down = False
-        self.scale = 1
+        self.scroll_scale = 1
 
     # ----------------------キー入力設定----------------------
     def key_handler(self, event):
@@ -249,18 +269,18 @@ class frameGUI(tk.Frame):
         if not self.is_focus_window:
             return
         if event.delta > 0:  # 向きの検出
-            if self.scale > 3:
+            if self.scroll_scale > SCALEMAX:
                 return
-            self.scale_at(1.25, event.x, event.y)  # 拡大
+            self.scroll_scale_at(1.25, event.x, event.y)  # 拡大
         else:
-            if self.scale < 0.5:
+            if self.scroll_scale < SCALEMIN:
                 return
-            self.scale_at(0.8, event.x, event.y)  # 縮小
+            self.scroll_scale_at(0.8, event.x, event.y)  # 縮小
 
     # ----------------------画像表示変換の設定----------------------
     # 拡大縮小
-    def scale_at(self, scale: float, cx: float, cy: float):
-        self.scale *= scale
+    def scroll_scale_at(self, scale: float, cx: float, cy: float):
+        self.scroll_scale *= scale
         # self.canvas.configure(width = self.canvas_bottom * scale)
         # self.canvas.configure(height = self.canvas_right * scale)
 
@@ -286,6 +306,13 @@ class frameGUI(tk.Frame):
             'ウィンドウを削除', state=self.get_can_foget_state())
 
         # 何があっても終了を一番下に設置する
+        # end = int(self.menu.index("end"))
+        # for index in range(end):
+        #     if self.menu.type(index) == "separator":
+        #         self.menu.delete(index)
+        #         break
+        # self.menu.delete(7)
+        # self.menu.add_separator()
         self.menu.delete("終了")
         self.menu.add_command(label="終了", command=self.finish)
 
@@ -325,6 +352,8 @@ class frameGUI(tk.Frame):
         self.menu_flip.add_checkbutton(
             label='上下反転', underline=5,
             command=self.flip_upside_down)
+
+        self.menu.add_separator()
 
         # [ポップアップメニュー] - [Command]
         self.menu.add_cascade(label='ウィンドウ切り替え',
